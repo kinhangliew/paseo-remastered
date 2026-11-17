@@ -57,8 +57,9 @@ const needsInputColorMapping = (theme: Theme) => ({
 });
 
 /**
- * Leading slot of a sidebar project row: chevron on hover, archive spinner while removing,
- * otherwise the project icon carrying the project's aggregate workspace status.
+ * Leading slots of a sidebar project row: the disclosure chevron, then the project icon carrying
+ * the project's aggregate workspace status (an archive spinner while the project is removed). A
+ * project with nothing to disclose keeps the chevron's slot, so its icon stays on the rail.
  */
 export function ProjectLeadingVisual({
   iconDataUri,
@@ -66,7 +67,6 @@ export function ProjectLeadingVisual({
   projectViewKey,
   backdrop,
   chevron = null,
-  showChevron = false,
   isArchiving = false,
 }: {
   iconDataUri: string | null;
@@ -76,32 +76,26 @@ export function ProjectLeadingVisual({
   /** The row's current background, so the status badge can knock out of it. */
   backdrop: SidebarSurfaceBackdrop;
   chevron?: "expand" | "collapse" | null;
-  showChevron?: boolean;
   isArchiving?: boolean;
 }) {
-  if (showChevron && chevron !== null) {
-    return (
-      <View style={styles.projectLeadingVisualSlot}>
+  return (
+    <>
+      <View style={styles.projectChevronSlot}>
         <ProjectInlineChevron chevron={chevron} />
       </View>
-    );
-  }
-
-  if (isArchiving) {
-    return (
-      <View style={styles.projectLeadingVisualSlot} testID="project-status-indicator-archiving">
-        <ThemedActivityIndicator size={8} uniProps={foregroundMutedColorMapping} />
-      </View>
-    );
-  }
-
-  return (
-    <ProjectStatusIndicator
-      iconDataUri={iconDataUri}
-      projectViewKey={projectViewKey}
-      statusBucket={statusBucket}
-      backdrop={backdrop}
-    />
+      {isArchiving ? (
+        <View style={styles.projectLeadingVisualSlot} testID="project-status-indicator-archiving">
+          <ThemedActivityIndicator size={8} uniProps={foregroundMutedColorMapping} />
+        </View>
+      ) : (
+        <ProjectStatusIndicator
+          iconDataUri={iconDataUri}
+          projectViewKey={projectViewKey}
+          statusBucket={statusBucket}
+          backdrop={backdrop}
+        />
+      )}
+    </>
   );
 }
 
@@ -240,7 +234,7 @@ function ProjectInlineChevron({ chevron }: { chevron: "expand" | "collapse" | nu
   }
   return (
     <DisclosureRotation expanded={chevron === "collapse"}>
-      <ThemedChevronRight size={14} uniProps={foregroundExtraMutedColorMapping} />
+      <ThemedChevronRight size={16} uniProps={foregroundExtraMutedColorMapping} />
     </DisclosureRotation>
   );
 }
@@ -269,6 +263,13 @@ const styles = StyleSheet.create((theme) => {
     // icon inside it. Rows lay their leading visual out with alignItems:flex-start, so a slot
     // only as tall as the icon puts it above the title and the kebab — which is why the
     // workspace status indicator is as tall as `LEADING_SLOT_HEIGHT`.
+    projectChevronSlot: {
+      width: densityIconBox("md"),
+      height: LEADING_SLOT_HEIGHT,
+      flexShrink: 0,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     projectLeadingVisualSlot: {
       width: densityIconBox("md"),
       height: LEADING_SLOT_HEIGHT,

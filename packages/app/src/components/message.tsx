@@ -981,6 +981,17 @@ const expandableBadgeStylesheet = StyleSheet.create((theme) => ({
   secondaryLabelActive: {
     color: theme.colors.foreground,
   },
+  // Soft UI (`design-handoff/soft-ui.md` §4): "Shell" in the muted color, the command beside it
+  // in the code font.
+  secondaryLabelCode: {
+    fontFamily: theme.fontFamily.mono,
+    fontSize: theme.fontSize.code,
+    color: theme.colors.foregroundSecondary,
+  },
+  // The shimmer copy of a code label keeps its font, so the sweep lines up with the glyphs.
+  shimmerCodeText: {
+    color: "transparent",
+  },
   shimmerText: {
     color: "transparent",
     fontSize: theme.fontSize.base,
@@ -1557,6 +1568,8 @@ export const TodoListCard = memo(function TodoListCard({
 interface ExpandableBadgeProps {
   label: string;
   secondaryLabel?: string;
+  /** "code" sets the secondary label as a command or path: monospace, in the primary color. */
+  secondaryLabelVariant?: "text" | "code";
   icon?: ComponentType<{ size?: number; color?: string }>;
   isExpanded: boolean;
   style?: StyleProp<ViewStyle>;
@@ -1878,10 +1891,21 @@ function buildShimmerTextStyle(input: {
   });
 }
 
+function secondaryLabelVariantStyles(variant: "text" | "code" | undefined) {
+  if (variant === "code") {
+    return {
+      label: expandableBadgeStylesheet.secondaryLabelCode,
+      shimmer: expandableBadgeStylesheet.shimmerCodeText,
+    };
+  }
+  return { label: null, shimmer: expandableBadgeStylesheet.shimmerText };
+}
+
 export const ExpandableBadge = memo(function ExpandableBadge({
   label,
   style,
   secondaryLabel,
+  secondaryLabelVariant,
   icon,
   isExpanded,
   onToggle,
@@ -2090,12 +2114,14 @@ export const ExpandableBadge = memo(function ExpandableBadge({
     [isActive, isLoading],
   );
 
+  const variantStyles = secondaryLabelVariantStyles(secondaryLabelVariant);
   const secondaryLabelStyle = useMemo(
     () => [
       expandableBadgeStylesheet.secondaryLabel,
+      variantStyles.label,
       isActive && expandableBadgeStylesheet.secondaryLabelActive,
     ],
-    [isActive],
+    [isActive, variantStyles.label],
   );
 
   const shimmerLabelTextStyle = useMemo(
@@ -2111,10 +2137,11 @@ export const ExpandableBadge = memo(function ExpandableBadge({
   const shimmerSecondaryTextStyle = useMemo(
     () => [
       expandableBadgeStylesheet.secondaryLabel,
-      expandableBadgeStylesheet.shimmerText,
+      variantStyles.label,
+      variantStyles.shimmer,
       shimmerSecondaryStyle,
     ],
-    [shimmerSecondaryStyle],
+    [variantStyles.label, variantStyles.shimmer, shimmerSecondaryStyle],
   );
 
   const chevronStyle = useMemo(
@@ -2404,6 +2431,7 @@ export const ToolCall = memo(function ToolCall({
       testID="tool-call-badge"
       label={presentation.displayName}
       secondaryLabel={presentation.summary}
+      secondaryLabelVariant="code"
       icon={presentation.icon}
       isExpanded={shouldRenderInline && isExpanded}
       onToggle={presentation.canOpenDetails ? handleToggle : undefined}

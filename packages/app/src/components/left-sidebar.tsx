@@ -1,13 +1,6 @@
 import { SidebarViewSlot } from "@/plugins/sidebar-view";
 import { useAddHost } from "@/hosts/add-host";
-import {
-  CircleGauge,
-  FolderPlus,
-  GitBranch,
-  Server,
-  Settings,
-  type LucideIcon,
-} from "lucide-react-native";
+import { CircleGauge, GitBranch, Plus, Settings, type LucideIcon } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import {
   memo,
@@ -54,6 +47,9 @@ import {
   SIDEBAR_RESIZE_FAIL_OFFSET,
 } from "@/components/sidebar-resize-handle-layout";
 import { HostPicker } from "@/components/hosts/host-picker";
+import { HostStatusDot } from "@/components/host-status-dot";
+import { useLocalDaemonServerId } from "@/hooks/use-is-local-daemon";
+import { orderHostsLocalFirst } from "@/types/host-connection";
 import { SidebarDisplayPreferencesMenu } from "@/components/sidebar/display-preferences/menu";
 import { SidebarSeparator } from "@/components/sidebar/sidebar-separator";
 import { SidebarToastRegion } from "@/components/sidebar/sidebar-toast-region";
@@ -305,6 +301,53 @@ function sidebarHostOptionTestID(serverId: string): string {
   return `sidebar-host-row-${serverId}`;
 }
 
+/**
+ * The host the sidebar is showing, as its status dot and name (`design-handoff/soft-ui.md`): the
+ * footer's leading item, and the trigger of the host picker.
+ */
+function FooterHostLabel({
+  buttonRef,
+  onPress,
+  testID,
+  label,
+}: {
+  buttonRef: RefObject<View | null>;
+  onPress: () => void;
+  testID: string;
+  label: string;
+}) {
+  const hosts = useHosts();
+  const localServerId = useLocalDaemonServerId();
+  const host = useMemo(
+    () => orderHostsLocalFirst(hosts, localServerId)[0] ?? null,
+    [hosts, localServerId],
+  );
+  return (
+    <Pressable
+      ref={buttonRef}
+      style={styles.footerHostLabel}
+      testID={testID}
+      nativeID={testID}
+      collapsable={false}
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+    >
+      {({ hovered }) => (
+        <>
+          {host ? <HostStatusDot serverId={host.serverId} /> : null}
+          <Text
+            numberOfLines={1}
+            style={hovered ? styles.footerHostTextHovered : styles.footerHostText}
+          >
+            {host?.label ?? label}
+          </Text>
+        </>
+      )}
+    </Pressable>
+  );
+}
+
 function FooterIconButton({
   buttonRef,
   onPress,
@@ -397,14 +440,11 @@ function SidebarHostPicker({
       addHostTestID="sidebar-host-add"
       hostOptionTestID={sidebarHostOptionTestID}
     >
-      <FooterIconButton
+      <FooterHostLabel
         buttonRef={triggerRef}
         onPress={handleOpen}
         testID="sidebar-hosts-trigger"
         label={label}
-        icon={Server}
-        // Server's two boxes fill more of the square than the other glyphs.
-        iconSizeAdjustment={-1}
       />
     </HostPicker>
   );
@@ -476,25 +516,26 @@ function SidebarFooter({
           onLayout={handleRowLayout}
           testID="sidebar-footer-bottom-line"
         >
-          {isInline("add-project") ? (
-            <FooterIconButton
-              onPress={handleOpenProject}
-              testID="sidebar-add-project"
-              label={labels.addProject}
-              icon={FolderPlus}
-              shortcutKeys={newAgentKeys}
-            />
-          ) : null}
-          {isInline("usage") ? <SidebarUsageIcon label={labels.usage} /> : null}
           {isInline("hosts") ? (
             <SidebarHostPicker
               label={labels.hosts}
               onAddHost={handleAddHost}
               onOpenHostSettings={handleOpenHostSettings}
             />
-          ) : null}
-          <View style={styles.footerSpacer} />
+          ) : (
+            <View style={styles.footerSpacer} />
+          )}
+          {isInline("usage") ? <SidebarUsageIcon label={labels.usage} /> : null}
           {isInline("help") ? <SidebarHelpMenu /> : null}
+          {isInline("add-project") ? (
+            <FooterIconButton
+              onPress={handleOpenProject}
+              testID="sidebar-add-project"
+              label={labels.addProject}
+              icon={Plus}
+              shortcutKeys={newAgentKeys}
+            />
+          ) : null}
           {overflow.length > 0 ? (
             <SidebarFooterOverflowMenu
               actions={overflow}
@@ -1086,9 +1127,32 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: FOOTER_ROW_PADDING,
     paddingVertical: theme.spacing[1.5],
   },
-  // Pushes Help and Settings to the end of the icon line.
+  // Pushes the icons to the end of the line when the host label has moved to the overflow menu.
   footerSpacer: {
     flex: 1,
+  },
+  // The host label takes the line's free width, so the icons sit at its end.
+  footerHostLabel: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing[2],
+    height: density.iconButton,
+    paddingHorizontal: theme.spacing[2],
+    borderRadius: theme.borderRadius.row,
+  },
+  footerHostText: {
+    flexShrink: 1,
+    minWidth: 0,
+    fontSize: theme.fontSize.base,
+    color: theme.colors.foregroundSecondary,
+  },
+  footerHostTextHovered: {
+    flexShrink: 1,
+    minWidth: 0,
+    fontSize: theme.fontSize.base,
+    color: theme.colors.foreground,
   },
   // Usage and plugin rows sit above the footer's icon line, spaced like the header nav rows.
   footerRows: {

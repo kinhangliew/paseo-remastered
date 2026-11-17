@@ -103,6 +103,8 @@ import { createWorkspaceVisibilityPolicy } from "@/components/sidebar/sidebar-gr
 import { useLimitedSidebarGroup } from "@/components/sidebar/use-limited-sidebar-group";
 import {
   SidebarWorkspaceRowFrame,
+  SIDEBAR_CHILD_ROW_INSET,
+  sidebarWorkspaceRowStyles,
   SidebarWorkspaceRowContent,
   SidebarWorkspaceShortcutBadge,
   resolveTrailingActionVisibility,
@@ -370,13 +372,17 @@ function getProjectWorkspaceRowStyle({
   isDragging,
   selected,
   isHovered,
+  nested,
 }: {
   isDragging: boolean;
   selected: boolean;
   isHovered: boolean;
+  /** Under its project row, rather than pinned with its project icon leading. */
+  nested: boolean;
 }) {
   return [
     styles.workspaceRow,
+    nested && sidebarWorkspaceRowStyles.rowNested,
     isHovered && styles.workspaceRowHovered,
     selected && styles.sidebarRowSelected,
     isDragging && styles.workspaceRowDragging,
@@ -412,6 +418,7 @@ function ProjectRowTrailingActions({
   isHovered,
   isMobileBreakpoint,
   isProjectActive,
+  workspaceCount,
   onBeginWorkspaceSetup,
   onRemoveProject,
   removeProjectStatus,
@@ -424,6 +431,8 @@ function ProjectRowTrailingActions({
   isHovered: boolean;
   isMobileBreakpoint: boolean;
   isProjectActive: boolean;
+  /** Shown at rest; the actions take its place on hover. */
+  workspaceCount: number;
   onBeginWorkspaceSetup: () => void;
   onRemoveProject?: () => void;
   removeProjectStatus: "idle" | "pending" | "success";
@@ -431,6 +440,11 @@ function ProjectRowTrailingActions({
   const actionsVisible = isHovered || platformIsNative || isMobileBreakpoint;
   return (
     <View style={styles.projectTrailingActions}>
+      {actionsVisible || workspaceCount === 0 ? null : (
+        <Text style={styles.projectWorkspaceCount} pointerEvents="none">
+          {workspaceCount}
+        </Text>
+      )}
       {worktreeTarget ? (
         <NewWorktreeButton
           displayName={displayName}
@@ -947,7 +961,6 @@ function ProjectHeaderRow({
           projectViewKey={project.viewKey}
           backdrop={getSidebarRowBackdrop({ isDragging, isHighlighted, selected, isHovered })}
           chevron={chevron}
-          showChevron={isHovered && chevron !== null}
           isArchiving={isArchiving}
         />
 
@@ -966,6 +979,7 @@ function ProjectHeaderRow({
         isHovered={isHovered}
         isMobileBreakpoint={isMobileBreakpoint}
         isProjectActive={isProjectActive}
+        workspaceCount={project.workspaces.length}
         onBeginWorkspaceSetup={handleBeginWorkspaceSetup}
         onRemoveProject={onRemoveProject}
         removeProjectStatus={removeProjectStatus}
@@ -1110,7 +1124,12 @@ function WorkspaceRowInner({
       {({ isHovered, contextMenuOpen, onContextMenuOpenChange, hoverHandlers }) => {
         const isDesktop = !isTouchPlatform;
         const serviceSummary = isDesktop ? selectWorkspaceServiceSummary(workspace.scripts) : null;
-        const workspaceRowStyle = getProjectWorkspaceRowStyle({ isDragging, selected, isHovered });
+        const workspaceRowStyle = getProjectWorkspaceRowStyle({
+          isDragging,
+          selected,
+          isHovered,
+          nested: !leadingProjectName,
+        });
         const backdrop = getSidebarRowBackdrop({ isDragging, isHighlighted, selected, isHovered });
         return (
           <View
@@ -1162,6 +1181,7 @@ function WorkspaceRowInner({
                 serviceSummary={serviceSummary}
                 backdrop={backdrop}
                 isHovered={isHovered}
+                isSelected={selected}
                 isLoading={isArchiving || isCreating}
                 isCreating={isCreating}
                 shortcutNumber={shortcutNumber}
@@ -2629,7 +2649,7 @@ const styles = StyleSheet.create((theme) => ({
     minHeight: density.rowHeight,
     marginBottom: theme.spacing[0.5],
     paddingVertical: theme.spacing[2],
-    paddingLeft: theme.spacing[4],
+    paddingLeft: SIDEBAR_CHILD_ROW_INSET,
     paddingRight: theme.spacing[3],
     borderRadius: theme.borderRadius.row,
     flexDirection: "row",
@@ -2664,11 +2684,14 @@ const styles = StyleSheet.create((theme) => ({
     flexShrink: 1,
     color: theme.colors.foreground,
   },
+  // Soft UI (`design-handoff/soft-ui.md`): chevron, folder, then the name, starting on a 6pt
+  // inset so the folder lands on the workspace rows' icon rail.
   projectRow: {
     position: "relative",
     minHeight: density.rowHeight,
     paddingVertical: theme.spacing[2],
-    paddingHorizontal: theme.spacing[2],
+    paddingLeft: theme.spacing[1.5],
+    paddingRight: theme.spacing[2],
     borderRadius: theme.borderRadius.row,
     marginBottom: theme.spacing[1],
     flexDirection: "row",
@@ -2706,7 +2729,7 @@ const styles = StyleSheet.create((theme) => ({
     minWidth: 0,
   },
   projectTitle: {
-    color: theme.colors.foregroundMuted,
+    color: theme.colors.foregroundSecondary,
     fontSize: theme.fontSize.base,
     fontWeight: "400",
     minWidth: 0,
@@ -2741,6 +2764,14 @@ const styles = StyleSheet.create((theme) => ({
   },
   projectIconActionButtonHidden: {
     opacity: 0,
+  },
+  // Sits over the hidden actions at rest, on the kebab's rail, so the row never reflows on hover.
+  projectWorkspaceCount: {
+    position: "absolute",
+    right: 6,
+    color: theme.colors.foregroundMuted,
+    fontSize: theme.fontSize.sm,
+    fontVariant: ["tabular-nums"],
   },
   projectTrailingActions: {
     flexDirection: "row",

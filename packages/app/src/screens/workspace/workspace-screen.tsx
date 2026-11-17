@@ -2,6 +2,7 @@ import {
   AdaptiveWorkspaceChrome,
   type WorkspaceCompactHeaderTabs,
 } from "./adaptive-workspace-chrome";
+import { DiffStatPill } from "@/components/diff-stat";
 import { planTimelineTailFetch } from "@/timeline/timeline-sync-plan";
 import { useHostFeature } from "@/runtime/host-features";
 import {
@@ -3260,6 +3261,13 @@ function WorkspaceScreenContent({
         {workspaceDirectory ? (
           <>
             <WorkspaceActions serverId={normalizedServerId} cwd={workspaceDirectory} />
+            {workspaceDescriptor?.diffStat ? (
+              <DiffStatPill
+                additions={workspaceDescriptor.diffStat.additions}
+                deletions={workspaceDescriptor.diffStat.deletions}
+                testID="workspace-header-diff-stat"
+              />
+            ) : null}
             {workspaceActionsInBar ? null : (
               <WorkspaceHeaderExplorerToggle
                 owner={explorerToggleOwner}
