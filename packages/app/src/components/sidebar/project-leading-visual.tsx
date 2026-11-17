@@ -1,7 +1,8 @@
 import { ActivityIndicator, View, type ViewStyle } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ChevronRight, CircleAlert } from "lucide-react-native";
+import { ChevronRight, CircleAlert } from "lucide-react-native";
+import { DisclosureRotation } from "@/components/ui/disclosure/view";
 import { ProjectIconView } from "@/components/project-icon-view";
 import { getStatusBucketLabel } from "@/hooks/sidebar-status-view-model";
 import { densityIconBox, densityIconProps } from "@/styles/density";
@@ -42,6 +43,10 @@ const projectIconProps = densityIconProps("md", () => ({}));
 
 const ThemedActivityIndicator = withUnistyles(ActivityIndicator);
 const ThemedCircleAlert = withUnistyles(CircleAlert);
+const ThemedChevronRight = withUnistyles(ChevronRight);
+const foregroundExtraMutedColorMapping = (theme: Theme) => ({
+  color: theme.colors.foregroundExtraMuted,
+});
 
 const foregroundMutedColorMapping = (theme: Theme) => ({
   color: theme.colors.foregroundMuted,
@@ -228,14 +233,16 @@ function ProjectIcon({
   );
 }
 
+// "collapse" means the project is open, so the chevron points down.
 function ProjectInlineChevron({ chevron }: { chevron: "expand" | "collapse" | null }) {
   if (chevron === null) {
     return null;
   }
-  if (chevron === "collapse") {
-    return <ChevronDown size={14} color="#9ca3af" />;
-  }
-  return <ChevronRight size={14} color="#9ca3af" />;
+  return (
+    <DisclosureRotation expanded={chevron === "collapse"}>
+      <ThemedChevronRight size={14} uniProps={foregroundExtraMutedColorMapping} />
+    </DisclosureRotation>
+  );
 }
 
 function getStatusDotColorStyle(bucket: ProjectStatusBadgeDotBucket): ViewStyle {

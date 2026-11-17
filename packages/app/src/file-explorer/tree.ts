@@ -10,6 +10,25 @@ export interface ExplorerTreeRow {
   depth: number;
 }
 
+/**
+ * The rows a just-opened directory revealed, in the order they appear, so they can enter one after
+ * another. Empty when the directory is not in `rows`.
+ */
+export function revealOrderUnder(
+  rows: readonly ExplorerTreeRow[],
+  directoryPath: string,
+): Map<string, number> {
+  const order = new Map<string, number>();
+  const directoryIndex = rows.findIndex((row) => row.entry.path === directoryPath);
+  if (directoryIndex < 0) return order;
+  const directoryDepth = rows[directoryIndex].depth;
+  for (const row of rows.slice(directoryIndex + 1)) {
+    if (row.depth <= directoryDepth) break;
+    order.set(row.entry.path, order.size);
+  }
+  return order;
+}
+
 interface FlattenExplorerTreeInput {
   directories: ReadonlyMap<string, ExplorerDirectory>;
   expandedPaths: ReadonlySet<string>;

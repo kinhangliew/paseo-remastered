@@ -122,6 +122,7 @@ import {
 } from "@/components/sidebar/workspace-trailing";
 import { DensityIcon } from "@/components/ui/density-icon";
 import { PressHighlight } from "@/components/ui/press-highlight";
+import { Disclosure, DisclosureItem } from "@/components/ui/disclosure/view";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Shortcut } from "@/components/ui/shortcut";
 import type { ShortcutKey } from "@/utils/format-shortcut";
@@ -1749,66 +1750,68 @@ function ProjectBlock({
     onToggleWorkspacesExpanded(project.viewKey);
   }, [onToggleWorkspacesExpanded, project.viewKey]);
 
+  // Built whether or not the project is collapsed, so the disclosure can keep the rows mounted
+  // while a collapse plays.
   let projectChildren = null;
-  if (!collapsed) {
-    if (project.workspaces.length > 0) {
-      const leadingWorkspaceRow = leadingWorkspace ? renderWorkspaceRow(leadingWorkspace) : null;
-      projectChildren = (
-        <>
-          {manualSort ? (
-            <>
-              {leadingWorkspaceRow}
-              <DraggableList
-                testID={`sidebar-workspace-list-${project.viewKey}`}
-                data={visibleWorkspaces}
-                keyExtractor={workspaceKeyExtractor}
-                renderItem={renderWorkspace}
-                onDragEnd={handleWorkspaceDragEnd}
-                extraData={activeWorkspaceSelectionKey(activeWorkspaceSelection)}
-                scrollEnabled={false}
-                useDragHandle
-                nestable={useNestable}
-                simultaneousGestureRef={parentGestureRef}
-                gestureHostPresented={dragGestureHostActive}
-                containerStyle={styles.workspaceListContainer}
-              />
-            </>
-          ) : (
-            <View
+  if (project.workspaces.length > 0) {
+    const leadingWorkspaceRow = leadingWorkspace ? renderWorkspaceRow(leadingWorkspace) : null;
+    projectChildren = (
+      <>
+        {manualSort ? (
+          <>
+            {leadingWorkspaceRow}
+            <DraggableList
               testID={`sidebar-workspace-list-${project.viewKey}`}
-              style={styles.workspaceListContainer}
-            >
-              {leadingWorkspaceRow}
-              {visibleWorkspaces.map((item) => renderWorkspaceRow(item))}
-            </View>
-          )}
-          {canToggleWorkspaces ? (
-            <SidebarGroupToggleRow
-              expanded={workspacesExpanded}
-              onPress={handleToggleWorkspacesExpanded}
-              testID={`sidebar-project-show-more-${project.viewKey}`}
+              data={visibleWorkspaces}
+              keyExtractor={workspaceKeyExtractor}
+              renderItem={renderWorkspace}
+              onDragEnd={handleWorkspaceDragEnd}
+              extraData={activeWorkspaceSelectionKey(activeWorkspaceSelection)}
+              scrollEnabled={false}
+              useDragHandle
+              nestable={useNestable}
+              simultaneousGestureRef={parentGestureRef}
+              gestureHostPresented={dragGestureHostActive}
+              containerStyle={styles.workspaceListContainer}
             />
-          ) : null}
-        </>
-      );
-    } else if (rowModel.trailingAction.kind === "new_workspace") {
-      projectChildren = (
-        <NewWorkspaceGhostRow
-          project={project}
-          displayName={displayName}
-          worktreeTarget={rowModel.trailingAction.target}
-          onWorkspacePress={onWorkspacePress}
-        />
-      );
-    }
+          </>
+        ) : (
+          <View
+            testID={`sidebar-workspace-list-${project.viewKey}`}
+            style={styles.workspaceListContainer}
+          >
+            {leadingWorkspaceRow ? (
+              <DisclosureItem index={0}>{leadingWorkspaceRow}</DisclosureItem>
+            ) : null}
+            {visibleWorkspaces.map((item, index) => (
+              <DisclosureItem key={item.workspaceKey} index={index + (leadingWorkspaceRow ? 1 : 0)}>
+                {renderWorkspaceRow(item)}
+              </DisclosureItem>
+            ))}
+          </View>
+        )}
+        {canToggleWorkspaces ? (
+          <SidebarGroupToggleRow
+            expanded={workspacesExpanded}
+            onPress={handleToggleWorkspacesExpanded}
+            testID={`sidebar-project-show-more-${project.viewKey}`}
+          />
+        ) : null}
+      </>
+    );
+  } else if (rowModel.trailingAction.kind === "new_workspace") {
+    projectChildren = (
+      <NewWorkspaceGhostRow
+        project={project}
+        displayName={displayName}
+        worktreeTarget={rowModel.trailingAction.target}
+        onWorkspacePress={onWorkspacePress}
+      />
+    );
   }
 
   return (
-    <View
-      role="group"
-      accessibilityLabel={displayName}
-      style={projectChildren ? styles.projectBlockExpanded : undefined}
-    >
+    <View role="group" accessibilityLabel={displayName}>
       <ProjectHeaderRow
         project={project}
         displayName={displayName}
@@ -1832,7 +1835,11 @@ function ProjectBlock({
         dragHandleProps={dragHandleProps}
       />
 
-      {projectChildren}
+      {projectChildren ? (
+        <Disclosure expanded={!collapsed}>
+          <View style={styles.projectBlockExpanded}>{projectChildren}</View>
+        </Disclosure>
+      ) : null}
     </View>
   );
 }

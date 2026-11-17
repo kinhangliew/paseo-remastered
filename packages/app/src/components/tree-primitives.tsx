@@ -2,6 +2,7 @@ import { View } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { ChevronRight } from "lucide-react-native";
 import { PastelFolder } from "@/components/icons/folder";
+import { DisclosureRotation } from "@/components/ui/disclosure/view";
 import { SPACING, type Theme } from "@/styles/theme";
 
 // Shared presentation primitives for the app's directory trees. Both the Files
@@ -36,11 +37,13 @@ const ThemedChevronRight = withUnistyles(ChevronRight);
 /** Rotating disclosure chevron for a directory row (points right; rotates down when expanded). */
 export function TreeChevron({ expanded }: { expanded: boolean }) {
   return (
-    <View style={expanded ? [styles.chevron, styles.chevronExpanded] : styles.chevron}>
-      <ThemedChevronRight
-        size={WORKSPACE_TREE_ICON_SIZE}
-        uniProps={foregroundExtraMutedIconColorMapping}
-      />
+    <View style={styles.chevron}>
+      <DisclosureRotation expanded={expanded}>
+        <ThemedChevronRight
+          size={WORKSPACE_TREE_ICON_SIZE}
+          uniProps={foregroundExtraMutedIconColorMapping}
+        />
+      </DisclosureRotation>
     </View>
   );
 }
@@ -84,8 +87,5 @@ const styles = StyleSheet.create((_theme: Theme) => ({
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-  },
-  chevronExpanded: {
-    transform: [{ rotate: "90deg" }],
   },
 }));

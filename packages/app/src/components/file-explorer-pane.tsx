@@ -29,6 +29,8 @@ import { isWeb } from "@/constants/platform";
 import * as Clipboard from "expo-clipboard";
 import { ChevronDown, Eye, EyeOff, FilePlus, FolderPlus, RotateCw } from "lucide-react-native";
 import { FileIcon } from "@/components/icons/file";
+import { DisclosureItem } from "@/components/ui/disclosure/view";
+import { DisclosureItemContext } from "@/components/ui/disclosure/presence";
 import {
   TreeChevron,
   TreeChevronSpacer,
@@ -76,6 +78,7 @@ import {
   reconcileRestoredExpandedPaths,
   refreshExplorerDirectories,
   restoreExpandedDirectories,
+  revealOrderUnder,
   setExpandedDirectoryPath,
   showHiddenFilesAndRestoreExpandedDirectories,
   type ExplorerTreeRow,
@@ -97,6 +100,30 @@ const ThemedLoadingSpinner = withUnistyles(LoadingSpinner);
 const foregroundMutedColorMapping = (theme: Theme) => ({
   color: theme.colors.foregroundMuted,
 });
+
+// Long enough for the listing of a cached directory to land and its rows to start entering.
+const REVEAL_WINDOW_MS = 900;
+const NO_REVEAL: ReadonlyMap<string, number> = new Map();
+const REVEAL_ENTERING = { enterOnMount: true, closing: false } as const;
+const REVEAL_STILL = { enterOnMount: false, closing: false } as const;
+
+/**
+ * Every tree row sits in a disclosure item, so a row keeps its element type when the reveal ends;
+ * only rows mounting while their directory was just opened animate in.
+ */
+function RevealedRow({
+  revealIndex,
+  children,
+}: {
+  revealIndex: number | undefined;
+  children: ReactNode;
+}) {
+  return (
+    <DisclosureItemContext value={revealIndex === undefined ? REVEAL_STILL : REVEAL_ENTERING}>
+      <DisclosureItem index={revealIndex ?? 0}>{children}</DisclosureItem>
+    </DisclosureItemContext>
+  );
+}
 
 function DirectoryChevronIcon({ loading, expanded }: { loading: boolean; expanded: boolean }) {
   if (loading) {
@@ -545,8 +572,18 @@ export function FileExplorerPane({
     workspaceStateKey,
   ]);
 
+  // The directory the user just opened: its rows enter one after another, then later mounts of
+  // the same rows (scrolling back into view) stay still.
+  const [revealedDirectory, setRevealedDirectory] = useState<string | null>(null);
+  useEffect(() => {
+    if (revealedDirectory === null) return;
+    const timer = setTimeout(() => setRevealedDirectory(null), REVEAL_WINDOW_MS);
+    return () => clearTimeout(timer);
+  }, [revealedDirectory]);
+
   const handleToggleDirectory = useCallback(
-    (entry: ExplorerEntry) =>
+    (entry: ExplorerEntry) => {
+      if (!expandedPaths.has(entry.path)) setRevealedDirectory(entry.path);
       toggleDirectory({
         entry,
         workspaceStateKey,
@@ -554,7 +591,8 @@ export function FileExplorerPane({
         directories,
         requestDirectoryListing,
         setExpandedPathsForWorkspace,
-      }),
+      });
+    },
     [
       workspaceStateKey,
       expandedPaths,
@@ -962,6 +1000,11 @@ export function FileExplorerPane({
     return rows;
   }, [pendingEdit, treeRows]);
 
+  const revealOrder = useMemo(
+    () => (revealedDirectory === null ? NO_REVEAL : revealOrderUnder(treeRows, revealedDirectory)),
+    [revealedDirectory, treeRows],
+  );
+
   const showInitialLoading = resolveShowInitialLoading({
     directories,
     isExplorerLoading,
@@ -993,35 +1036,39 @@ export function FileExplorerPane({
           />
         );
       }
+      const revealIndex = revealOrder.get(info.item.row.entry.path);
       return (
-        <TreeRowDispatcher
-          serverId={serverId}
-          workspaceId={workspaceId}
-          row={info.item.row}
-          index={info.index}
-          expandedPaths={expandedPaths}
-          selectedEntryPath={selectedEntryPath}
-          isDirectoryLoading={isDirectoryLoading}
-          onEntryPress={handleEntryPress}
-          onSelectEntry={handleSelectEntry}
-          onCopyPath={handleCopyPath}
-          onCopyRelativePath={handleCopyRelativePath}
-          onOpenInEditor={openDirectoryInEditor ? handleOpenDirectoryInEditor : undefined}
-          editorTargetName={openDirectoryInEditor?.targetName}
-          onRevealEntry={fileManagerTarget ? handleRevealEntry : undefined}
-          revealTargetName={fileManagerTarget?.label}
-          onDownloadEntry={handleDownloadEntry}
-          onAddToChat={onAddToChat}
-          onOpenFileToSide={onOpenFileToSide}
-          onNewEntry={fsEntryOpsEnabled ? handleNewEntry : undefined}
-          onCollapseDirectory={handleCollapseDirectory}
-          onRenameEntry={fsEntryOpsEnabled ? handleRenameEntry : undefined}
-          onDuplicateEntry={fsEntryDuplicateEnabled ? handleDuplicateEntry : undefined}
-          onDeleteEntry={fsEntryOpsEnabled ? handleDeleteEntry : undefined}
-        />
+        <RevealedRow revealIndex={revealIndex}>
+          <TreeRowDispatcher
+            serverId={serverId}
+            workspaceId={workspaceId}
+            row={info.item.row}
+            index={info.index}
+            expandedPaths={expandedPaths}
+            selectedEntryPath={selectedEntryPath}
+            isDirectoryLoading={isDirectoryLoading}
+            onEntryPress={handleEntryPress}
+            onSelectEntry={handleSelectEntry}
+            onCopyPath={handleCopyPath}
+            onCopyRelativePath={handleCopyRelativePath}
+            onOpenInEditor={openDirectoryInEditor ? handleOpenDirectoryInEditor : undefined}
+            editorTargetName={openDirectoryInEditor?.targetName}
+            onRevealEntry={fileManagerTarget ? handleRevealEntry : undefined}
+            revealTargetName={fileManagerTarget?.label}
+            onDownloadEntry={handleDownloadEntry}
+            onAddToChat={onAddToChat}
+            onOpenFileToSide={onOpenFileToSide}
+            onNewEntry={fsEntryOpsEnabled ? handleNewEntry : undefined}
+            onCollapseDirectory={handleCollapseDirectory}
+            onRenameEntry={fsEntryOpsEnabled ? handleRenameEntry : undefined}
+            onDuplicateEntry={fsEntryDuplicateEnabled ? handleDuplicateEntry : undefined}
+            onDeleteEntry={fsEntryOpsEnabled ? handleDeleteEntry : undefined}
+          />
+        </RevealedRow>
       );
     },
     [
+      revealOrder,
       expandedPaths,
       fsEntryDuplicateEnabled,
       fsEntryOpsEnabled,

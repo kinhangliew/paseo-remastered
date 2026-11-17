@@ -6,6 +6,7 @@ import {
   reconcileRestoredExpandedPaths,
   refreshExplorerDirectories,
   restoreExpandedDirectories,
+  revealOrderUnder,
   setExpandedDirectoryPath,
   showHiddenFilesAndRestoreExpandedDirectories,
 } from "./tree";
@@ -267,5 +268,31 @@ describe("refreshExplorerDirectories", () => {
       "a.ts",
       "b.ts",
     ]);
+  });
+});
+
+describe("revealOrderUnder", () => {
+  const row = (path: string, depth: number) => ({
+    entry: makeDirectoryEntry(path.split("/").pop() ?? path, path),
+    depth,
+  });
+  const rows = [
+    row("src", 0),
+    row("src/app", 1),
+    row("src/app/a.ts", 2),
+    row("src/b.ts", 1),
+    row("docs", 0),
+  ];
+
+  it("orders every row under the opened directory, nested ones included", () => {
+    expect([...revealOrderUnder(rows, "src")]).toEqual([
+      ["src/app", 0],
+      ["src/app/a.ts", 1],
+      ["src/b.ts", 2],
+    ]);
+  });
+
+  it("reveals nothing for a directory that is not in the tree", () => {
+    expect(revealOrderUnder(rows, "missing").size).toBe(0);
   });
 });
