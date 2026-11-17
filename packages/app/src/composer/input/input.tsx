@@ -434,7 +434,7 @@ function SendButtonContent({
   glyph: ToolbarGlyph;
 }) {
   if (isSubmitLoading) {
-    return <ThemedLoadingSpinner size="small" uniProps={iconAccentForegroundMapping} />;
+    return <ThemedLoadingSpinner size="small" uniProps={sendGlyphColorMapping} />;
   }
   if (submitLabel) {
     return <Text style={styles.sendButtonLabel}>{submitLabel}</Text>;
@@ -444,7 +444,7 @@ function SendButtonContent({
       <ThemedCornerDownLeft
         size={glyph.size}
         strokeWidth={glyph.strokeWidth}
-        uniProps={iconAccentForegroundMapping}
+        uniProps={sendGlyphColorMapping}
       />
     );
   }
@@ -452,7 +452,7 @@ function SendButtonContent({
     <ThemedArrowUp
       size={glyph.size}
       strokeWidth={glyph.strokeWidth}
-      uniProps={iconAccentForegroundMapping}
+      uniProps={sendGlyphColorMapping}
     />
   );
 }
@@ -2383,10 +2383,12 @@ const styles = StyleSheet.create((theme: Theme) => ({
     flexShrink: 1,
     flexDirection: "column",
     gap: theme.spacing[3],
-    backgroundColor: theme.colors.surface1,
+    // Soft UI: a white card with a hairline border and a soft shadow (`design-handoff/soft-ui.md`).
+    backgroundColor: theme.colors.surfaceComposer,
     borderWidth: theme.borderWidth[1],
-    borderColor: theme.colors.borderAccent,
+    borderColor: theme.colors.borderComposer,
     borderRadius: COMPOSER_CORNER_RADIUS,
+    ...theme.shadow.card,
     paddingTop: COMPOSER_PADDING_TOP,
     paddingBottom: COMPOSER_PADDING_BOTTOM,
     paddingHorizontal: COMPOSER_PADDING_HORIZONTAL,
@@ -2525,11 +2527,12 @@ const styles = StyleSheet.create((theme: Theme) => ({
     alignItems: "center",
     justifyContent: "center",
   },
+  // Send is the foreground color with the page's color on it: black on light, white on dark.
   sendButtonDisc: {
     width: TOOLBAR_DISC_SIZE,
     height: TOOLBAR_DISC_SIZE,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.accent,
+    backgroundColor: theme.colors.foreground,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -2538,14 +2541,14 @@ const styles = StyleSheet.create((theme: Theme) => ({
     height: TOOLBAR_DISC_SIZE,
     paddingHorizontal: theme.spacing[3],
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.accent,
+    backgroundColor: theme.colors.foreground,
     alignItems: "center",
     justifyContent: "center",
   },
   sendButtonLabel: {
     fontSize: theme.fontSize.base,
     fontWeight: theme.fontWeight.medium,
-    color: theme.colors.accentForeground,
+    color: theme.colors.surface0,
   },
   iconButtonHovered: {
     backgroundColor: theme.colors.surface2,
@@ -2588,4 +2591,4 @@ const ThemedLoadingSpinner = withUnistyles(LoadingSpinner);
 
 const iconForegroundMapping = (theme: Theme) => ({ color: theme.colors.foreground });
 const iconForegroundMutedMapping = (theme: Theme) => ({ color: theme.colors.foregroundMuted });
-const iconAccentForegroundMapping = (theme: Theme) => ({ color: theme.colors.accentForeground });
+const sendGlyphColorMapping = (theme: Theme) => ({ color: theme.colors.surface0 });

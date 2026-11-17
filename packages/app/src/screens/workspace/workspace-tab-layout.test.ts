@@ -5,7 +5,10 @@ import {
 } from "./workspace-explorer-toggle";
 import { describe, expect, it } from "vitest";
 import { SidebarCloseButton } from "@/components/headers/sidebar-close-button";
-import { resolveWorkspaceTabChipBackdrop } from "@/screens/workspace/workspace-tab-chip-backdrop";
+import {
+  resolveWorkspaceTabChipBackdrop,
+  resolveWorkspaceTabTrack,
+} from "@/screens/workspace/workspace-tab-chip-backdrop";
 import { darkPureBlackTheme, darkTheme, lightTheme } from "@/styles/theme";
 import {
   workspaceTabSwitcherPopoverLayout,
@@ -223,16 +226,12 @@ describe("Explorer toggle ownership", () => {
 
 describe("resolveWorkspaceTabChipBackdrop", () => {
   const themes = { light: lightTheme, dark: darkTheme, pureBlack: darkPureBlackTheme };
-  const rails = {
-    sidebar: "surfaceSidebar",
-    surface: "surface0",
-  } as const;
+  const rails = ["sidebar", "surface"] as const;
 
-  it("paints the active chip in a colour the rail does not already use, in every theme", () => {
+  it("paints the active chip in a colour the track does not already use, in every theme", () => {
     for (const [, theme] of Object.entries(themes)) {
-      for (const [rail, resting] of Object.entries(rails) as Array<
-        [keyof typeof rails, (typeof rails)[keyof typeof rails]]
-      >) {
+      for (const rail of rails) {
+        const resting = resolveWorkspaceTabTrack(rail);
         const active = resolveWorkspaceTabChipBackdrop({
           rail,
           isActiveFocused: true,
@@ -250,13 +249,12 @@ describe("resolveWorkspaceTabChipBackdrop", () => {
     }
   });
 
-  it("rests on the rail surface when the chip is neither active nor hovered", () => {
-    expect(
-      resolveWorkspaceTabChipBackdrop({ rail: "sidebar", isActiveFocused: false, isFilled: false }),
-    ).toBe("surfaceSidebar");
-    expect(
-      resolveWorkspaceTabChipBackdrop({ rail: "surface", isActiveFocused: false, isFilled: false }),
-    ).toBe("surface0");
+  it("rests on the track when the chip is neither active nor hovered", () => {
+    for (const rail of rails) {
+      expect(
+        resolveWorkspaceTabChipBackdrop({ rail, isActiveFocused: false, isFilled: false }),
+      ).toBe(resolveWorkspaceTabTrack(rail));
+    }
   });
 });
 

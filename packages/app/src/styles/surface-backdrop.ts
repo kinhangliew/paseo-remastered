@@ -17,7 +17,8 @@ export type SurfaceBackdrop =
   | "surface2"
   | "surfaceSidebar"
   | "surfaceSidebarHover"
-  | "surfaceSidebarSelected";
+  | "surfaceSidebarSelected"
+  | "surfacePill";
 
 export type SidebarSurfaceBackdrop = Extract<
   SurfaceBackdrop,

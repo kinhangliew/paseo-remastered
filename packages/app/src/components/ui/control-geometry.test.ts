@@ -251,11 +251,12 @@ describe("control geometry", () => {
     }
   });
 
-  it("keeps segmented controls ghost with button-radius segments in a button-sized track", () => {
+  it("insets button-radius segments in a button-sized track", () => {
     const geometry = createControlGeometry(theme);
 
-    expect(geometry.segmentedContainerSm.padding).toBe(0);
-    expect(geometry.segmentedContainerMd.padding).toBe(0);
+    // The track's inset plus a segment's height is the control height.
+    expect(geometry.segmentedContainerSm.padding).toBe(2);
+    expect(geometry.segmentedContainerMd.padding).toBe(2);
     expect(geometry.segmentedSegmentSm.borderRadius).toBe(geometry.buttonSm.borderRadius);
     expect(geometry.segmentedSegmentMd.borderRadius).toBe(geometry.buttonMd.borderRadius);
     expect(geometry.segmentedContainerSm.minHeight).toEqual(geometry.buttonSm.minHeight);

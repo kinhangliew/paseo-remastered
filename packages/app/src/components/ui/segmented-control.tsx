@@ -1,7 +1,22 @@
-import { useCallback, useMemo, type ReactNode } from "react";
-import { Pressable, Text, View, type PressableStateCallbackType } from "react-native";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  Pressable,
+  StyleSheet as RNStyleSheet,
+  Text,
+  View,
+  type LayoutChangeEvent,
+  type PressableStateCallbackType,
+} from "react-native";
 import type { StyleProp, TextStyle, ViewStyle } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
+import { DISCLOSURE_EASE_OUT } from "@/components/ui/disclosure/motion";
 import {
   createControlGeometry,
   controlIconSize,
@@ -69,9 +84,19 @@ export function SegmentedControl<T extends string>({
     () => [styles.container, containerSizeStyle, style],
     [containerSizeStyle, style],
   );
+  const [frames, setFrames] = useState<Partial<Record<T, SegmentFrame>>>({});
+  const handleSegmentLayout = useCallback((segmentValue: T, frame: SegmentFrame) => {
+    setFrames((current) => {
+      const previous = current[segmentValue];
+      if (previous && previous.x === frame.x && previous.width === frame.width) return current;
+      return { ...current, [segmentValue]: frame };
+    });
+  }, []);
+  const selectedFrame = frames[value] ?? null;
 
   return (
     <View style={containerStyle} testID={testID}>
+      {selectedFrame ? <SegmentIndicator frame={selectedFrame} /> : null}
       {options.map((option) => {
         const isSelected = option.value === value;
 
@@ -80,12 +105,14 @@ export function SegmentedControl<T extends string>({
             key={option.value}
             option={option}
             isSelected={isSelected}
+            showsOwnFill={isSelected && selectedFrame === null}
             iconSize={iconSize}
             hideLabels={hideLabels}
             segmentSizeStyle={segmentSizeStyle}
             labelSizeStyle={labelSizeStyle}
             currentValue={value}
             onValueChange={onValueChange}
+            onFrame={handleSegmentLayout}
           />
         );
       })}
@@ -93,25 +120,86 @@ export function SegmentedControl<T extends string>({
   );
 }
 
+interface SegmentFrame {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const INDICATOR_SLIDE_MS = 320;
+const INDICATOR_EASING = Easing.bezier(...DISCLOSURE_EASE_OUT);
+
+// Positioning only: a Unistyles style on the Reanimated view crashes on theme change
+// (docs/unistyles.md), so the pill's color sits on a plain child.
+const indicatorFrameStyles = RNStyleSheet.create({
+  frame: { position: "absolute", top: 0, left: 0 },
+});
+
+/** The white pill under the selected segment. It slides to a new segment over 320ms. */
+function SegmentIndicator({ frame }: { frame: SegmentFrame }) {
+  const reducedMotion = useReducedMotion();
+  const x = useSharedValue(frame.x);
+  const width = useSharedValue(frame.width);
+  useEffect(() => {
+    if (reducedMotion) {
+      x.value = frame.x;
+      width.value = frame.width;
+      return;
+    }
+    const timing = { duration: INDICATOR_SLIDE_MS, easing: INDICATOR_EASING };
+    x.value = withTiming(frame.x, timing);
+    width.value = withTiming(frame.width, timing);
+  }, [frame.x, frame.width, reducedMotion, width, x]);
+  const slideStyle = useAnimatedStyle(() => ({
+    width: width.value,
+    transform: [{ translateX: x.value }],
+  }));
+  const heightStyle = useMemo(
+    () => ({ top: frame.y, height: frame.height }),
+    [frame.y, frame.height],
+  );
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[indicatorFrameStyles.frame, heightStyle, slideStyle]}
+    >
+      <View style={styles.indicator} />
+    </Animated.View>
+  );
+}
+
 function SegmentItem<T extends string>({
   option,
   isSelected,
+  showsOwnFill,
   iconSize,
   hideLabels,
   segmentSizeStyle,
   labelSizeStyle,
   currentValue,
   onValueChange,
+  onFrame,
 }: {
   option: SegmentedControlOption<T>;
   isSelected: boolean;
+  /** Paints the selected fill itself until the sliding indicator has measured this segment. */
+  showsOwnFill: boolean;
   iconSize: number;
   hideLabels: boolean;
   segmentSizeStyle: StyleProp<ViewStyle>;
   labelSizeStyle: StyleProp<TextStyle>;
   currentValue: T;
   onValueChange: (value: T) => void;
+  onFrame: (value: T, frame: SegmentFrame) => void;
 }) {
+  const handleLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { x, y, width, height } = event.nativeEvent.layout;
+      if (width > 0) onFrame(option.value, { x, y, width, height });
+    },
+    [onFrame, option.value],
+  );
   const labelStyle = useMemo(
     () => [styles.label, labelSizeStyle, isSelected && styles.labelSelected],
     [labelSizeStyle, isSelected],
@@ -125,12 +213,12 @@ function SegmentItem<T extends string>({
     ({ hovered, pressed }: PressableStateCallbackType & { hovered?: boolean }) => [
       styles.segment,
       segmentSizeStyle,
-      isSelected && styles.segmentSelected,
+      showsOwnFill && styles.segmentSelected,
       Boolean(hovered) && !isSelected && styles.segmentHover,
       pressed && !isSelected && styles.segmentPressed,
       option.disabled && styles.segmentDisabled,
     ],
-    [isSelected, option.disabled, segmentSizeStyle],
+    [isSelected, option.disabled, segmentSizeStyle, showsOwnFill],
   );
   const accessibilityState = useMemo(
     () => ({ selected: isSelected, disabled: option.disabled }),
@@ -144,6 +232,7 @@ function SegmentItem<T extends string>({
       disabled={option.disabled}
       testID={option.testID}
       onPress={handlePress}
+      onLayout={handleLayout}
       style={pressableStyle}
     >
       {option.icon ? (
@@ -166,11 +255,21 @@ const styles = StyleSheet.create((theme) => {
   const geometry = createControlGeometry(theme);
 
   return {
+    // Soft UI: a gray track with a white pill sliding under the selected segment
+    // (`design-handoff/soft-ui.md` §4).
     container: {
+      position: "relative",
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: "transparent",
+      backgroundColor: theme.colors.surface2,
+      borderRadius: theme.borderRadius.full,
       gap: theme.spacing[1],
+    },
+    indicator: {
+      flex: 1,
+      borderRadius: theme.borderRadius.full,
+      backgroundColor: theme.colors.surfacePill,
+      ...theme.shadow.pill,
     },
     containerSm: {
       ...geometry.segmentedContainerSm,
@@ -192,10 +291,10 @@ const styles = StyleSheet.create((theme) => {
       ...geometry.segmentedSegmentMd,
     },
     segmentSelected: {
-      backgroundColor: theme.colors.surface3,
+      backgroundColor: theme.colors.surfacePill,
     },
     segmentHover: {
-      backgroundColor: theme.colors.surface2,
+      backgroundColor: theme.colors.surface3,
     },
     segmentPressed: {
       backgroundColor: theme.colors.surface3,

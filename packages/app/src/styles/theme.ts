@@ -390,6 +390,7 @@ const lightSemanticColors = buildLightSemanticColors({
   terminalBlack: "#1c1c1e",
   terminalBrightBlack: "#3f3f46",
   panelContent: {
+    borderComposer: "#e8e9ec",
     foregroundSecondary: "#4a4a4f",
     iconOutline: "#b9bac0",
     iconGlyph: "#7d7e85",
@@ -552,6 +553,7 @@ const paseoDarkColors = buildDarkSemanticColors({
   panelContent: {
     surfacePill: "#36373c",
     surfaceComposer: "#1e1f22",
+    borderComposer: "#2e2f33",
     foregroundSecondary: "#c4c4c9",
     iconFill: "#2a2b2f",
     iconOutline: "#5a5b62",
@@ -784,6 +786,10 @@ const darkShadow = {
     shadowRadius: 24,
     elevation: 8,
   },
+  // Soft UI (`design-handoff/soft-ui.md`): dark separates layers mostly by lightness, so these
+  // stay close to the surface.
+  card: { boxShadow: "0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35)" },
+  pill: { boxShadow: "0 1px 2px rgba(0, 0, 0, 0.35)" },
 } as const;
 
 export function buildDarkTheme(semanticColors: ReturnType<typeof buildDarkSemanticColors>) {
@@ -847,6 +853,9 @@ const lightShadow = {
     shadowRadius: 24,
     elevation: 8,
   },
+  // Soft UI (`design-handoff/soft-ui.md`): the composer card and the active tab or segment pill.
+  card: { boxShadow: "0 1px 2px rgba(20, 20, 30, 0.04), 0 10px 30px rgba(20, 20, 30, 0.06)" },
+  pill: { boxShadow: "0 1px 2px rgba(20, 20, 30, 0.06), 0 2px 8px rgba(20, 20, 30, 0.05)" },
 } as const;
 
 export function buildLightTheme(semanticColors: ReturnType<typeof buildLightSemanticColors>) {

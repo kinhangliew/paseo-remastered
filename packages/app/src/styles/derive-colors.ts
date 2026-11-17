@@ -30,6 +30,8 @@ const PANEL_CONTENT_STEPS = {
 
 // The composer card on dark lifts off the page by this step; on light it is the page, with a border.
 const DARK_COMPOSER_STEP = 1.1;
+// The composer card's border, as a step from the card.
+const COMPOSER_BORDER_STEPS = { light: 1.21, dark: 1.23 } as const;
 
 // Unselected row text sits this far from muted toward the foreground.
 const SECONDARY_TEXT_MIX = 0.5;
@@ -71,6 +73,7 @@ export function deriveSurfaceStates(
 export interface PanelContentColors {
   surfacePill: string;
   surfaceComposer: string;
+  borderComposer: string;
   foregroundSecondary: string;
   iconFill: string;
   iconOutline: string;
@@ -97,6 +100,7 @@ export function derivePanelContent({
     return {
       surfacePill: page,
       surfaceComposer: page,
+      borderComposer: stepContrast(page, foreground, COMPOSER_BORDER_STEPS.light),
       foregroundSecondary,
       iconFill: page,
       iconOutline: stepContrast(panel, foreground, steps.iconOutline),
@@ -104,9 +108,11 @@ export function derivePanelContent({
     };
   }
   const steps = PANEL_CONTENT_STEPS.dark;
+  const surfaceComposer = stepContrast(page, foreground, DARK_COMPOSER_STEP);
   return {
     surfacePill: stepContrast(panel, foreground, steps.pill),
-    surfaceComposer: stepContrast(page, foreground, DARK_COMPOSER_STEP),
+    surfaceComposer,
+    borderComposer: stepContrast(surfaceComposer, foreground, COMPOSER_BORDER_STEPS.dark),
     foregroundSecondary,
     iconFill: stepContrast(panel, foreground, steps.iconFill),
     iconOutline: stepContrast(panel, foreground, steps.iconOutline),

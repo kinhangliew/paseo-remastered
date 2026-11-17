@@ -54,6 +54,8 @@ function getBackdropStyle(backdrop: SurfaceBackdrop | null | undefined) {
       return styles.backdropSurfaceSidebarSelected;
     case "surface2":
       return styles.backdropSurface2;
+    case "surfacePill":
+      return styles.backdropSurfacePill;
     default:
       return null;
   }
@@ -95,6 +97,7 @@ export const styles = StyleSheet.create((theme) => {
     backdropSurfaceSidebarHover: { backgroundColor: theme.colors.surfaceSidebarHover },
     backdropSurfaceSidebarSelected: { backgroundColor: theme.colors.surfaceSidebarSelected },
     backdropSurface2: { backgroundColor: theme.colors.surface2 },
+    backdropSurfacePill: { backgroundColor: theme.colors.surfacePill },
 
     // The closed ring the quarter runs on. Same colour rather than a grey so the indicator is one
     // object at one hue; the opacity is what puts it behind the quarter instead of competing.

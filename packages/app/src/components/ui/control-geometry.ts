@@ -450,11 +450,11 @@ export function createControlGeometry(theme: Theme) {
     },
     segmentedContainerSm: {
       minHeight: CONTROL_HEIGHTS.sm,
-      padding: 0,
+      padding: SEGMENTED_INSET,
     },
     segmentedContainerMd: {
       minHeight: CONTROL_HEIGHTS.md,
-      padding: 0,
+      padding: SEGMENTED_INSET,
     },
     segmentedSegmentSm: {
       minHeight: mapLayout(CONTROL_HEIGHTS.sm, (height) => height - SEGMENTED_INSET * 2),

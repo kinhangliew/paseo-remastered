@@ -72,6 +72,7 @@ import type { WorkspaceTabLaunchPurpose } from "@/workspace-tabs/launcher";
 import type { SurfaceBackdrop } from "@/styles/surface-backdrop";
 import {
   resolveWorkspaceTabChipBackdrop,
+  resolveWorkspaceTabTrack,
   type WorkspaceTabRailSurface,
 } from "@/screens/workspace/workspace-tab-chip-backdrop";
 import type { Theme } from "@/styles/theme";
@@ -1441,17 +1442,19 @@ function ResolvedWorkspaceDesktopTabsRow({
           onScroll={tabScrollBoundary.onScroll}
           scrollEventThrottle={16}
         >
-          <SortableInlineList
-            data={displayedTabs}
-            keyExtractor={tabKeyExtractor}
-            useDragHandle
-            disabled={!externalDndContext && displayedTabs.length < 2}
-            onDragEnd={handleDragEnd}
-            externalDndContext={externalDndContext}
-            activeId={activeDragTabId}
-            getItemData={getTabDragData}
-            renderItem={renderTab}
-          />
+          <View style={styles.tabTrack(resolveWorkspaceTabTrack(rail))}>
+            <SortableInlineList
+              data={displayedTabs}
+              keyExtractor={tabKeyExtractor}
+              useDragHandle
+              disabled={!externalDndContext && displayedTabs.length < 2}
+              onDragEnd={handleDragEnd}
+              externalDndContext={externalDndContext}
+              activeId={activeDragTabId}
+              getItemData={getTabDragData}
+              renderItem={renderTab}
+            />
+          </View>
           {!layout.requiresHorizontalScrollFallback ? (
             <WorkspaceNewTabButton
               panePanelKinds={panePanelKinds}
@@ -1686,10 +1689,19 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: PANE_SPLIT_ACTIONS_HORIZONTAL_PADDING,
     marginRight: PANE_SPLIT_ACTIONS_OUTER_MARGIN,
   },
+  // Soft UI: the tabs sit on a gray track and the active one is a white pill
+  // (`design-handoff/soft-ui.md` §4). The track's padding is what the bar height leaves room for.
+  tabTrack: (track: SurfaceBackdrop) => ({
+    flexDirection: "row",
+    alignItems: "center",
+    padding: theme.spacing[0.5],
+    borderRadius: theme.borderRadius.xl,
+    backgroundColor: theme.colors[track],
+  }),
   tab: {
     height: CONTROL_HEIGHTS.sm,
     paddingHorizontal: TAB_CHIP_HORIZONTAL_PADDING,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing[1],
@@ -1697,6 +1709,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   tabFill: (backdrop: SurfaceBackdrop) => ({
     backgroundColor: theme.colors[backdrop],
+    ...(backdrop === "surfacePill" ? theme.shadow.pill : null),
   }),
   tabHoverFrame: {
     position: "relative",
@@ -1777,8 +1790,8 @@ const styles = StyleSheet.create((theme) => ({
     right: 0,
     bottom: 0,
     width: 48,
-    borderTopRightRadius: theme.borderRadius.md,
-    borderBottomRightRadius: theme.borderRadius.md,
+    borderTopRightRadius: theme.borderRadius.lg,
+    borderBottomRightRadius: theme.borderRadius.lg,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,

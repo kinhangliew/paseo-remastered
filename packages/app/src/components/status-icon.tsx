@@ -105,6 +105,7 @@ const styles = StyleSheet.create((theme) => ({
   surfaceSidebar: { borderColor: theme.colors.surfaceSidebar },
   surfaceSidebarHover: { borderColor: theme.colors.surfaceSidebarHover },
   surfaceSidebarSelected: { borderColor: theme.colors.surfaceSidebarSelected },
+  surfacePill: { borderColor: theme.colors.surfacePill },
   statusAlertOverlay: {
     position: "absolute",
     right: STATUS_ALERT_OFFSET,
