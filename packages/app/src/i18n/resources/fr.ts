@@ -2714,6 +2714,13 @@ export const fr: TranslationResources = {
           "Aperçu en direct de la typographie du contenu, du thème de syntaxe et de la police du code",
         previewContent: "Aperçu du contenu et du code",
       },
+      icons: {
+        title: "Icônes",
+        fileIcons: "Icônes de fichier",
+        fileIconsHint: "Les dossiers restent pastel dans les deux styles",
+        outline: "Contour",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "Raccourcis",

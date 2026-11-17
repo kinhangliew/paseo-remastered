@@ -2689,6 +2689,13 @@ export const ar: TranslationResources = {
           "معاينة مباشرة لطباعة المحتوى وموضوع بناء الجملة وخط التعليمات البرمجية",
         previewContent: "معاينة المحتوى والرمز",
       },
+      icons: {
+        title: "الأيقونات",
+        fileIcons: "أيقونات الملفات",
+        fileIconsHint: "تبقى المجلدات بألوان هادئة في كلا النمطين",
+        outline: "مخطط",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "الاختصارات",

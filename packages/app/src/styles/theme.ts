@@ -218,6 +218,33 @@ const darkStatusDotColors = {
   statusDotRunning: "#5caaf6",
 };
 
+// Pastel two-tone folders for projects and directories (`design-handoff/soft-ui.md` §3). On dark
+// the fill drops to a deep tint of the hue and the stroke brightens, so a folder stays soft and
+// colored without glowing. Every dark variant shares the dark set.
+export interface FolderSwatch {
+  fill: string;
+  stroke: string;
+}
+export const FOLDER_COLOR_NAMES = ["blue", "green", "pink", "orange", "purple"] as const;
+export type FolderColorName = (typeof FOLDER_COLOR_NAMES)[number];
+export type FolderPalette = Record<FolderColorName, FolderSwatch>;
+
+const lightFolderColors: FolderPalette = {
+  blue: { fill: "#ddebfd", stroke: "#5e9bef" },
+  green: { fill: "#dcf2e3", stroke: "#5db97f" },
+  pink: { fill: "#fce1ec", stroke: "#ea87af" },
+  orange: { fill: "#fde8d0", stroke: "#ec9d45" },
+  purple: { fill: "#ece6fd", stroke: "#9b83ec" },
+};
+
+const darkFolderColors: FolderPalette = {
+  blue: { fill: "#1e3150", stroke: "#6ea8f7" },
+  green: { fill: "#1b3527", stroke: "#6ccb8e" },
+  pink: { fill: "#3f2232", stroke: "#f095bc" },
+  orange: { fill: "#3e2c18", stroke: "#f2ac5a" },
+  purple: { fill: "#2d2549", stroke: "#a994f2" },
+};
+
 export interface LightThemeConfig {
   surface0: string;
   surface1: string;
@@ -313,6 +340,10 @@ export function buildLightSemanticColors(tint: LightThemeConfig) {
     primaryForeground: tint.primaryForeground,
     mutedForeground: tint.foregroundMuted,
     ring: tint.ring ?? tint.accent,
+
+    folder: lightFolderColors,
+    // The breathing dot on a running workspace or project icon (`design-handoff/soft-ui.md` §3).
+    runningDot: "#34a85e",
 
     ...lightDiffColors,
     ...lightStatusColors,
@@ -468,6 +499,10 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
     primaryForeground: tint.surface0,
     mutedForeground: tint.foregroundMuted,
     ring,
+
+    folder: darkFolderColors,
+    // The breathing dot on a running workspace or project icon (`design-handoff/soft-ui.md` §3).
+    runningDot: "#3fbf6e",
 
     ...darkDiffColors,
     ...darkStatusColors,

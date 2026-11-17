@@ -1,3 +1,5 @@
+import { FOLDER_COLOR_NAMES, type FolderColorName } from "./theme";
+
 // Muted tones, all landing in a 4.2-4.8:1 contrast band against the white letter on top.
 //
 // Two properties matter more than the individual hues. First, low chroma: these squares sit
@@ -100,6 +102,11 @@ function hashIdentityKey(key: string): number {
     hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
   }
   return hash;
+}
+
+/** The pastel folder for a project or directory, picked from the same hash as its identity color. */
+export function deriveFolderColorName(key: string): FolderColorName {
+  return FOLDER_COLOR_NAMES[hashIdentityKey(key) % FOLDER_COLOR_NAMES.length];
 }
 
 export function deriveIdentityColorName(key: string): IdentityColorName {

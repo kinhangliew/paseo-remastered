@@ -2667,6 +2667,13 @@ export const ko: TranslationResources = {
         previewAccessibility: "콘텐츠 타이포그래피, 구문 테마, 코드 글꼴의 실시간 미리보기",
         previewContent: "콘텐츠 및 코드 미리보기",
       },
+      icons: {
+        title: "아이콘",
+        fileIcons: "파일 아이콘",
+        fileIconsHint: "두 스타일 모두 폴더는 파스텔 색상으로 유지됩니다",
+        outline: "아웃라인",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "단축키",

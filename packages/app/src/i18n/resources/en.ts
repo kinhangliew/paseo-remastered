@@ -2783,6 +2783,13 @@ export const en = {
         previewAccessibility: "Live preview of content typography, syntax theme, and code font",
         previewContent: "Readable content and code preview",
       },
+      icons: {
+        title: "Icons",
+        fileIcons: "File icons",
+        fileIconsHint: "Folders stay pastel in both styles",
+        outline: "Outline",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "Shortcuts",

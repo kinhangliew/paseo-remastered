@@ -2699,6 +2699,13 @@ export const ru: TranslationResources = {
           "Предварительный просмотр типографики содержимого, темы синтаксиса и шрифта кода в реальном времени.",
         previewContent: "Предварительный просмотр содержимого и кода",
       },
+      icons: {
+        title: "Значки",
+        fileIcons: "Значки файлов",
+        fileIconsHint: "Папки остаются пастельными в обоих стилях",
+        outline: "Контурные",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "Сочетания клавиш",

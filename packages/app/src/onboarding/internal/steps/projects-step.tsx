@@ -51,11 +51,7 @@ export function ProjectsStep({
             >
               <View style={settingsStyles.rowContent}>
                 <View style={styles.titleLine}>
-                  <FolderProjectIcon
-                    serverId={serverId}
-                    rootPath={rootPath}
-                    name={basename(rootPath)}
-                  />
+                  <FolderProjectIcon serverId={serverId} rootPath={rootPath} />
                   <Text style={[settingsStyles.rowTitle, styles.title]} numberOfLines={1}>
                     {basename(rootPath)}
                   </Text>

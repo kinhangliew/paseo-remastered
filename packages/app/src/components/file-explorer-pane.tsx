@@ -28,9 +28,11 @@ import { useIsCompactFormFactor } from "@/constants/layout";
 import { isWeb } from "@/constants/platform";
 import * as Clipboard from "expo-clipboard";
 import { ChevronDown, Eye, EyeOff, FilePlus, FolderPlus, RotateCw } from "lucide-react-native";
-import { MaterialFileIcon } from "@/components/material-file-icon";
+import { FileIcon } from "@/components/icons/file";
 import {
   TreeChevron,
+  TreeChevronSpacer,
+  TreeFolderIcon,
   treeRowPaddingLeft,
   workspaceTreeRowStyles,
   WORKSPACE_TREE_ICON_LABEL_GAP,
@@ -204,10 +206,13 @@ function EntryNameInputRow({
     <View style={[workspaceTreeRowStyles.row, { paddingLeft: treeRowPaddingLeft(depth) }]}>
       <View style={styles.entryInfo}>
         <View style={styles.entryIcon}>
+          {kind === "directory" ? <TreeChevron expanded={false} /> : null}
+        </View>
+        <View style={styles.entryIcon}>
           {kind === "directory" ? (
-            <TreeChevron expanded={false} />
+            <TreeFolderIcon path={initialName} />
           ) : (
-            <MaterialFileIcon fileName={name || "untitled"} size={WORKSPACE_TREE_ICON_SIZE} />
+            <FileIcon fileName={name || "untitled"} size={WORKSPACE_TREE_ICON_SIZE} />
           )}
         </View>
         <TextInput
@@ -363,7 +368,14 @@ function TreeRowItem({
             {isDirectory ? (
               <DirectoryChevronIcon loading={loading} expanded={isExpanded} />
             ) : (
-              <MaterialFileIcon fileName={entry.name} size={WORKSPACE_TREE_ICON_SIZE} />
+              <TreeChevronSpacer />
+            )}
+          </View>
+          <View style={styles.entryIcon}>
+            {isDirectory ? (
+              <TreeFolderIcon path={entry.path} />
+            ) : (
+              <FileIcon fileName={entry.name} size={WORKSPACE_TREE_ICON_SIZE} />
             )}
           </View>
           <Text

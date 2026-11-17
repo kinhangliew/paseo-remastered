@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   IDENTITY_COLOR_NAMES,
+  deriveFolderColorName,
   deriveIdentityColorName,
   identityColor,
 } from "@/styles/identity-colors";
+import { FOLDER_COLOR_NAMES } from "@/styles/theme";
 
 function contrastRatio(foreground: string, background: string): number {
   const luminance = (hex: string) => {
@@ -35,5 +37,17 @@ describe("identity colors", () => {
       expect(contrastRatio(identityColor(color), "#ffffff")).toBeGreaterThanOrEqual(4.2);
       expect(contrastRatio(identityColor(color), "#ffffff")).toBeLessThanOrEqual(4.8);
     }
+  });
+});
+
+describe("folder colors", () => {
+  it("gives one key the same folder every time", () => {
+    expect(deriveFolderColorName("paseo")).toBe(deriveFolderColorName("paseo"));
+  });
+
+  it("spreads keys across all five pastels", () => {
+    const keys = Array.from({ length: 50 }, (_, index) => `project-${index}`);
+    const used = new Set(keys.map(deriveFolderColorName));
+    expect([...used].sort()).toEqual([...FOLDER_COLOR_NAMES].sort());
   });
 });

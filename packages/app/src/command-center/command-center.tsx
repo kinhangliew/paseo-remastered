@@ -36,7 +36,7 @@ import type { SurfaceBackdrop } from "@/styles/surface-backdrop";
 import type { Theme } from "@/styles/theme";
 import { HighlightedText, type HighlightedTextProps } from "@/components/ui/highlighted-text";
 import { findHighlightRanges } from "@/components/ui/highlighted-text-segments";
-import { MaterialFileIcon } from "@/components/material-file-icon";
+import { FileIcon } from "@/components/icons/file";
 import { useProviderIcon } from "@/components/provider-icons";
 import { ProjectIconView } from "@/components/project-icon-view";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -73,7 +73,6 @@ import {
 } from "@/utils/command-center-focus-restore";
 import { focusWithRetries } from "@/utils/web-focus";
 import { navigateToAgent } from "@/utils/navigate-to-agent";
-import { projectIconPlaceholderLabelFromDisplayName } from "@/utils/project-display-name";
 import { getProjectSummaryForHostProject } from "@/utils/projects";
 import {
   COMMAND_CENTER_LINE_HEIGHT,
@@ -708,19 +707,16 @@ function WorkspaceResultIcon({
 }
 
 /**
- * The same project icon the sidebar's workspace rows lead with: its image, or a lettered square.
- * Hidden from assistive tech so the fallback's initial does not prefix the row's name.
+ * The same project icon the sidebar's workspace rows lead with: its image, or a pastel folder.
+ * Hidden from assistive tech: the row's name already says which project it is.
  */
 function DecorativeProjectIcon({ project }: { project: CommandCenterWorkspaceResult["project"] }) {
-  const initial = projectIconPlaceholderLabelFromDisplayName(project.name).charAt(0).toUpperCase();
   return (
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
       <ProjectIconView
         iconDataUri={project.iconDataUri}
-        initial={initial}
         projectViewKey={project.viewKey}
         size={16}
-        textStyle={styles.projectIconFallbackText}
       />
     </View>
   );
@@ -740,7 +736,7 @@ function ResultContent({
       <View style={styles.rowContent}>
         <View style={styles.rowMain}>
           <View style={styles.iconSlot} testID="command-center-file-icon">
-            <MaterialFileIcon fileName={result.title} size={16} />
+            <FileIcon fileName={result.title} size={16} />
           </View>
           <Text style={styles.fileLine} numberOfLines={1} testID="command-center-file-line">
             <QueryHighlightedText
@@ -1252,7 +1248,6 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "center",
   },
-  projectIconFallbackText: { fontSize: 9 },
   rowShortcut: { flexShrink: 0 },
   breadcrumb: {
     flex: 1,

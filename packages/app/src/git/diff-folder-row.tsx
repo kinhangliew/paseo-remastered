@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native-unistyles";
 import { DiffStat } from "@/components/diff-stat";
 import {
   TreeChevron,
+  TreeFolderIcon,
   treeRowPaddingLeft,
   workspaceTreeRowStyles,
   WORKSPACE_TREE_ICON_LABEL_GAP,
@@ -154,6 +155,7 @@ export function DiffFolderRow({
             <View style={styles.chevronSlot}>
               <TreeChevron expanded={!collapsed} />
             </View>
+            <TreeFolderIcon path={dirPath} />
             <Text
               style={[
                 styles.folderName,

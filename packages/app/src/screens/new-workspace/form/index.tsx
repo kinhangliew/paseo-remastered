@@ -184,7 +184,6 @@ export function useNewWorkspaceForm(props: NewWorkspaceFormProps): ReactElement 
       selectedProject ? (
         <ProjectIcon
           projectViewKey={selectedProject.viewKey}
-          projectName={selectedProject.projectName}
           iconDataUri={selectedProjectIconUri}
         />
       ) : (

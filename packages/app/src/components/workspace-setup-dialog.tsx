@@ -33,7 +33,6 @@ import type {
   CreateAgentRequestOptions,
   DaemonClient,
 } from "@getpaseo/client/internal/daemon-client";
-import { projectIconPlaceholderLabelFromDisplayName } from "@/utils/project-display-name";
 import { navigateToAgent } from "@/utils/navigate-to-agent";
 import { navigateToWorkspace } from "@/stores/navigation-active-workspace-store";
 import type { MessagePayload } from "@/composer/types";
@@ -385,9 +384,6 @@ export function WorkspaceSetupDialog() {
 
   const workspaceTitle = resolveWorkspaceTitle({ workspace, displayName, sourceDirectory });
 
-  const placeholderLabel = projectIconPlaceholderLabelFromDisplayName(workspaceTitle);
-  const placeholderInitial = placeholderLabel.charAt(0).toUpperCase();
-
   const agentControlsWithDisabled = useMemo(
     () =>
       composerState
@@ -404,17 +400,15 @@ export function WorkspaceSetupDialog() {
       <View style={styles.subtitleRow}>
         <ProjectIconView
           iconDataUri={iconDataUri}
-          initial={placeholderInitial}
           projectViewKey={sourceDirectory}
           size={ICON_SIZE.md}
-          textStyle={styles.projectIconFallbackText}
         />
         <Text style={styles.projectTitle} numberOfLines={1}>
           {workspaceTitle}
         </Text>
       </View>
     ),
-    [iconDataUri, placeholderInitial, sourceDirectory, workspaceTitle],
+    [iconDataUri, sourceDirectory, workspaceTitle],
   );
 
   const sheetHeader = useMemo<SheetHeader>(
@@ -469,9 +463,6 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing[2],
-  },
-  projectIconFallbackText: {
-    fontSize: 9,
   },
   projectTitle: {
     fontSize: theme.fontSize.base,

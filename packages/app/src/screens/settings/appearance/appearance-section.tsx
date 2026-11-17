@@ -11,6 +11,7 @@ import {
 } from "@getpaseo/highlight";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { DropdownTrigger } from "@/components/ui/dropdown-trigger";
+import { SegmentedControl, type SegmentedControlOption } from "@/components/ui/segmented-control";
 import { SettingsSection } from "@/components/settings/headings/settings-section";
 import { ThemePicker } from "@/appearance/theme-picker";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import {
   sanitizeFontFamily,
   useAppSettings,
   type AppSettings,
+  type FileIconStyle,
 } from "@/hooks/use-settings";
 import { DEFAULT_MONO_FONT_STACK, DEFAULT_UI_FONT_STACK } from "@/styles/theme";
 import { isNative } from "@/constants/platform";
@@ -305,6 +307,38 @@ function SyntaxRow({ value, onChange }: SyntaxRowProps) {
   );
 }
 
+function FileIconsRow() {
+  const { t } = useTranslation();
+  const { settings, updateSettings } = useAppSettings();
+  const options = useMemo<SegmentedControlOption<FileIconStyle>[]>(
+    () => [
+      { value: "outline", label: t("settings.appearance.icons.outline") },
+      { value: "material", label: t("settings.appearance.icons.material") },
+    ],
+    [t],
+  );
+  const handleChange = useCallback(
+    (fileIconStyle: FileIconStyle) => {
+      void updateSettings({ fileIconStyle });
+    },
+    [updateSettings],
+  );
+  return (
+    <View style={settingsStyles.row}>
+      <View style={settingsStyles.rowContent}>
+        <Text style={settingsStyles.rowTitle}>{t("settings.appearance.icons.fileIcons")}</Text>
+        <Text style={settingsStyles.rowHint}>{t("settings.appearance.icons.fileIconsHint")}</Text>
+      </View>
+      <SegmentedControl
+        options={options}
+        value={settings.fileIconStyle}
+        onValueChange={handleChange}
+        testID="appearance-file-icons"
+      />
+    </View>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -508,6 +542,11 @@ export function AppearanceSection() {
             value={settings.contentMaxWidth}
             onChange={handleContentMaxWidthChange}
           />
+        </View>
+      </SettingsSection>
+      <SettingsSection title={t("settings.appearance.icons.title")}>
+        <View style={settingsStyles.card}>
+          <FileIconsRow />
         </View>
       </SettingsSection>
       <SettingsSection title={t("settings.appearance.syntax.title")}>

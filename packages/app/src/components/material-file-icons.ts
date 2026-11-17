@@ -129,12 +129,15 @@ const EXTENSION_TO_ICON: Record<string, string> = {
   zig: "zig",
 };
 
-export function getRawFileIconSvg(fileName: string): string {
+/** The material icon name for a file, or null when the extension has none. */
+export function getFileIconName(fileName: string): string | null {
   const ext = getExtension(fileName);
-  if (ext) {
-    const iconName = EXTENSION_TO_ICON[ext];
-    if (iconName && SVG_ICONS[iconName]) return SVG_ICONS[iconName];
-  }
+  return ext ? (EXTENSION_TO_ICON[ext] ?? null) : null;
+}
+
+export function getRawFileIconSvg(fileName: string): string {
+  const iconName = getFileIconName(fileName);
+  if (iconName && SVG_ICONS[iconName]) return SVG_ICONS[iconName];
   return SVG_ICONS["_default"];
 }
 

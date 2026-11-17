@@ -39,11 +39,7 @@ export function ProjectOption({
     () =>
       project ? (
         <IconBox>
-          <ProjectIcon
-            projectViewKey={project.viewKey}
-            projectName={project.projectName}
-            iconDataUri={iconDataUri}
-          />
+          <ProjectIcon projectViewKey={project.viewKey} iconDataUri={iconDataUri} />
         </IconBox>
       ) : undefined,
     [iconDataUri, project],

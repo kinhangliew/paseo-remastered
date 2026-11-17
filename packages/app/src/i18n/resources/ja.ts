@@ -2678,6 +2678,13 @@ export const ja: TranslationResources = {
           "コンテンツの文字組み、構文ハイライトテーマ、コードフォントのライブプレビュー",
         previewContent: "コンテンツとコードのプレビュー",
       },
+      icons: {
+        title: "アイコン",
+        fileIcons: "ファイルアイコン",
+        fileIconsHint: "どちらのスタイルでもフォルダーはパステルカラーのままです",
+        outline: "アウトライン",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "ショートカット",

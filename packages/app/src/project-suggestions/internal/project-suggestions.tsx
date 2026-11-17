@@ -88,11 +88,7 @@ function SuggestionRow({
     >
       <View style={settingsStyles.rowContent}>
         <View style={styles.titleLine}>
-          <FolderProjectIcon
-            serverId={serverId}
-            rootPath={suggestion.rootPath}
-            name={suggestion.displayName}
-          />
+          <FolderProjectIcon serverId={serverId} rootPath={suggestion.rootPath} />
           <Text style={[settingsStyles.rowTitle, styles.title]} numberOfLines={1}>
             {suggestion.displayName}
           </Text>

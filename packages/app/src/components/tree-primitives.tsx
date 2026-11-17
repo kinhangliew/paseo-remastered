@@ -1,6 +1,7 @@
 import { View } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { ChevronRight } from "lucide-react-native";
+import { PastelFolder } from "@/components/icons/folder";
 import { SPACING, type Theme } from "@/styles/theme";
 
 // Shared presentation primitives for the app's directory trees. Both the Files
@@ -42,6 +43,23 @@ export function TreeChevron({ expanded }: { expanded: boolean }) {
       />
     </View>
   );
+}
+
+/** A directory's pastel folder, colored by its path, in the slot after the chevron. */
+export function TreeFolderIcon({ path }: { path: string }) {
+  return (
+    <View style={styles.chevron}>
+      <PastelFolder colorKey={path} size={WORKSPACE_TREE_ICON_SIZE} />
+    </View>
+  );
+}
+
+/**
+ * Holds a file row's chevron column empty, so its icon sits under its sibling directories'
+ * folders and every name at one depth starts on the same rail.
+ */
+export function TreeChevronSpacer() {
+  return <View style={styles.chevron} />;
 }
 
 export const workspaceTreeRowStyles = StyleSheet.create((theme: Theme) => ({

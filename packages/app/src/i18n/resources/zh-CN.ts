@@ -2623,6 +2623,13 @@ export const zhCN: TranslationResources = {
         previewAccessibility: "内容排版、语法主题和代码字体的实时预览",
         previewContent: "内容和代码预览",
       },
+      icons: {
+        title: "图标",
+        fileIcons: "文件图标",
+        fileIconsHint: "两种样式下文件夹都保持柔和的彩色",
+        outline: "线框",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "快捷键",

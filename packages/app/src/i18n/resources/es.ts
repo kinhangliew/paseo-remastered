@@ -2712,6 +2712,13 @@ export const es: TranslationResources = {
           "Vista previa en vivo de la tipografía de contenido, el tema de sintaxis y la fuente del código",
         previewContent: "Vista previa de contenido y código",
       },
+      icons: {
+        title: "Iconos",
+        fileIcons: "Iconos de archivo",
+        fileIconsHint: "Las carpetas siguen en tonos pastel con ambos estilos",
+        outline: "Contorno",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "Atajos",

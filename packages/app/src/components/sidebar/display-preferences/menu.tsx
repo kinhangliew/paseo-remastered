@@ -42,7 +42,6 @@ import { useSidebarModel } from "@/components/sidebar/sidebar-model";
 import { ProjectIconView } from "@/components/project-icon-view";
 import { useProjectIcons } from "@/projects/icons";
 import { resolveSidebarProjectIconTargets } from "@/utils/sidebar-project-row-model";
-import { projectIconPlaceholderLabelFromDisplayName } from "@/utils/project-display-name";
 import type { SidebarProjectEntry } from "@/hooks/use-sidebar-workspaces-list";
 import type { Theme } from "@/styles/theme";
 import {
@@ -770,15 +769,9 @@ function ProjectFilterItem({
   const handleSelect = useCallback(() => onToggle(viewKey), [viewKey, onToggle]);
   const leading = useMemo(
     () => (
-      <ProjectIconView
-        iconDataUri={iconDataUri}
-        initial={projectIconPlaceholderLabelFromDisplayName(label).charAt(0).toUpperCase()}
-        projectViewKey={viewKey}
-        size={OPTION_ICON_SIZE}
-        textStyle={styles.projectIconText}
-      />
+      <ProjectIconView iconDataUri={iconDataUri} projectViewKey={viewKey} size={OPTION_ICON_SIZE} />
     ),
-    [iconDataUri, label, viewKey],
+    [iconDataUri, viewKey],
   );
 
   return (
@@ -838,10 +831,5 @@ const styles = StyleSheet.create((theme) => ({
   },
   triggerHovered: {
     backgroundColor: theme.colors.surfaceSidebarHover,
-  },
-  // The icon sits in a 14pt menu slot, so the fallback initial is sized down to match rather
-  // than reusing the sidebar row's 16pt figure.
-  projectIconText: {
-    fontSize: 8,
   },
 }));

@@ -136,11 +136,7 @@ function ProjectRow({ project, host, isFirst, iconDataUri }: ProjectRowProps) {
     >
       <View style={styles.rowMain}>
         <View style={styles.leading}>
-          <ProjectRowIcon
-            iconDataUri={iconDataUri}
-            projectName={projectName}
-            projectViewKey={viewKey}
-          />
+          <ProjectRowIcon iconDataUri={iconDataUri} projectViewKey={viewKey} />
         </View>
         <Text style={settingsStyles.rowTitle} numberOfLines={1}>
           {projectName}
@@ -153,23 +149,12 @@ function ProjectRow({ project, host, isFirst, iconDataUri }: ProjectRowProps) {
 
 function ProjectRowIcon({
   iconDataUri,
-  projectName,
   projectViewKey,
 }: {
   iconDataUri: string | null;
-  projectName: string;
   projectViewKey: string;
 }) {
-  const initial = projectName.trim().charAt(0).toUpperCase() || "?";
-  return (
-    <ProjectIconView
-      iconDataUri={iconDataUri}
-      initial={initial}
-      projectViewKey={projectViewKey}
-      size={16}
-      textStyle={styles.iconFallbackText}
-    />
-  );
+  return <ProjectIconView iconDataUri={iconDataUri} projectViewKey={projectViewKey} size={16} />;
 }
 
 const styles = StyleSheet.create((theme) => ({
@@ -216,9 +201,6 @@ const styles = StyleSheet.create((theme) => ({
     height: 16,
     alignItems: "center",
     justifyContent: "center",
-  },
-  iconFallbackText: {
-    fontSize: theme.fontSize.sm,
   },
   spinnerColor: {
     color: theme.colors.foregroundMuted,

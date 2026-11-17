@@ -267,11 +267,7 @@ function ProjectSettingsBody({
 
       <View style={styles.headerBlock}>
         <View style={styles.titleRow}>
-          <ProjectTitleIcon
-            iconDataUri={projectIconDataUri}
-            projectName={selectedHost.projectName}
-            projectViewKey={project.viewKey}
-          />
+          <ProjectTitleIcon iconDataUri={projectIconDataUri} projectViewKey={project.viewKey} />
           <Text style={styles.projectTitle} numberOfLines={1}>
             {selectedHost.projectName}
           </Text>
@@ -835,23 +831,12 @@ function ResolveSpinnerColor(): string {
 
 function ProjectTitleIcon({
   iconDataUri,
-  projectName,
   projectViewKey,
 }: {
   iconDataUri: string | null;
-  projectName: string;
   projectViewKey: string;
 }) {
-  const initial = projectName.trim().charAt(0).toUpperCase() || "?";
-  return (
-    <ProjectIconView
-      iconDataUri={iconDataUri}
-      initial={initial}
-      projectViewKey={projectViewKey}
-      size={28}
-      textStyle={styles.titleIconFallbackText}
-    />
-  );
+  return <ProjectIconView iconDataUri={iconDataUri} projectViewKey={projectViewKey} size={28} />;
 }
 
 interface MetadataPromptSectionProps {
@@ -1130,10 +1115,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   editButton: {
     padding: theme.spacing[1],
-  },
-  titleIconFallbackText: {
-    fontSize: theme.fontSize.base,
-    fontWeight: theme.fontWeight.medium,
   },
   iconColor: {
     color: theme.colors.foregroundMuted,

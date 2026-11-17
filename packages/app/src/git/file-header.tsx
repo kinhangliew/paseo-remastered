@@ -5,8 +5,9 @@ import { useWorkspaceFileDragSource } from "@/attachments/use-workspace-file-dra
 import { DiffStat } from "@/components/diff-stat";
 import { FileActionsContextMenuContent } from "@/components/file-actions-menu";
 import { FileChangeIcon } from "@/components/file-change-icon";
-import { MaterialFileIcon } from "@/components/material-file-icon";
+import { FileIcon } from "@/components/icons/file";
 import {
+  TreeChevronSpacer,
   treeRowPaddingLeft,
   workspaceTreeRowStyles,
   WORKSPACE_PANE_TRAILING_GLYPH_RAIL,
@@ -247,9 +248,12 @@ export const FileHeader = memo(function FileHeader({
     >
       <View ref={dragSourceRef} style={showDir ? styles.left : [styles.left, styles.leftTree]}>
         {showDir ? null : (
-          <View style={styles.icon}>
-            <MaterialFileIcon fileName={fileName} size={WORKSPACE_TREE_ICON_SIZE} />
-          </View>
+          <>
+            <TreeChevronSpacer />
+            <View style={styles.icon}>
+              <FileIcon fileName={fileName} size={WORKSPACE_TREE_ICON_SIZE} />
+            </View>
+          </>
         )}
         <Text style={nameStyle} numberOfLines={1} testID={testID ? `${testID}-name` : undefined}>
           {fileName}

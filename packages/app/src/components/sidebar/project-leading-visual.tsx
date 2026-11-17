@@ -12,14 +12,12 @@ import {
   type ProjectStatusBadgeContent,
   type ProjectStatusBadgeDotBucket,
 } from "@/utils/project-status-badge-content";
-import { projectIconPlaceholderLabelFromDisplayName } from "@/utils/project-display-name";
 import { getStatusDotColor } from "@/utils/status-dot-color";
 import {
   STATUS_INDICATOR_ALERT_SIZE,
   STATUS_INDICATOR_FILLED_DOT_SIZE,
 } from "@/utils/status-indicator-geometry";
-import { StatusRing } from "@/components/status-ring";
-import { getStatusRingOffset } from "@/components/status-ring/geometry";
+import { RunningDot } from "@/components/icons/running-dot";
 import type { SidebarSurfaceBackdrop } from "@/styles/surface-backdrop";
 
 // Every surfaced status shares one badge shell, so the badge never changes size or position
@@ -58,7 +56,6 @@ const needsInputColorMapping = (theme: Theme) => ({
  * otherwise the project icon carrying the project's aggregate workspace status.
  */
 export function ProjectLeadingVisual({
-  displayName,
   iconDataUri,
   statusBucket,
   projectViewKey,
@@ -67,7 +64,6 @@ export function ProjectLeadingVisual({
   showChevron = false,
   isArchiving = false,
 }: {
-  displayName: string;
   iconDataUri: string | null;
   /** Aggregate status of the project's workspaces; null when it shouldn't be surfaced. */
   statusBucket: SidebarStateBucket | null;
@@ -97,7 +93,6 @@ export function ProjectLeadingVisual({
   return (
     <ProjectStatusIndicator
       iconDataUri={iconDataUri}
-      displayName={displayName}
       projectViewKey={projectViewKey}
       statusBucket={statusBucket}
       backdrop={backdrop}
@@ -112,7 +107,6 @@ export function ProjectLeadingVisual({
 // only its contents change.
 export function ProjectStatusIndicator({
   iconDataUri,
-  displayName,
   projectViewKey,
   statusBucket,
   backdrop,
@@ -120,7 +114,6 @@ export function ProjectStatusIndicator({
   testID,
 }: {
   iconDataUri: string | null;
-  displayName: string;
   projectViewKey: string;
   statusBucket: SidebarStateBucket | null;
   /** The row's current background, so the status badge can knock out of it. */
@@ -128,9 +121,6 @@ export function ProjectStatusIndicator({
   loading?: boolean;
   testID?: string;
 }) {
-  const placeholderInitial = projectIconPlaceholderLabelFromDisplayName(displayName)
-    .charAt(0)
-    .toUpperCase();
   // A row that's still starting up and a row that's working are both "busy", and at this size
   // there's no room to draw the difference — so `loading` just resolves to the running bucket
   // and they share one badge.
@@ -148,13 +138,9 @@ export function ProjectStatusIndicator({
       }
     >
       <View style={styles.projectIconBox}>
-        <ProjectIcon
-          iconDataUri={iconDataUri}
-          placeholderInitial={placeholderInitial}
-          projectViewKey={projectViewKey}
-        />
+        <ProjectIcon iconDataUri={iconDataUri} projectViewKey={projectViewKey} />
         {badgeContent === null || badgeBucket === null ? null : (
-          <ProjectStatusBadge
+          <StatusCornerBadge
             content={badgeContent}
             statusBucket={badgeBucket}
             backdrop={backdrop}
@@ -165,7 +151,11 @@ export function ProjectStatusIndicator({
   );
 }
 
-function ProjectStatusBadge({
+/**
+ * The status badge on the corner of a project or workspace icon. Running is the breathing green
+ * dot; the other statuses sit in one knockout shell so the badge never changes size between them.
+ */
+export function StatusCornerBadge({
   content,
   statusBucket,
   backdrop,
@@ -175,18 +165,17 @@ function ProjectStatusBadge({
   backdrop: SidebarSurfaceBackdrop;
 }) {
   const { t } = useTranslation();
-  // Running skips the shell. The ring is wider than the 12pt shell and carries its own knockout,
-  // so nesting it inside would clip it against the very thing that was meant to separate it from
-  // the icon. It anchors to the same corner instead, growing around the centre the dot had.
+  // Running skips the shell: the dot carries its own knockout ring and its halo breathes past
+  // the shell's edge.
   if (content.kind === "dot" && content.bucket === "running") {
     return (
       <View
         role="status"
         accessibilityLabel={getStatusBucketLabel(statusBucket, t)}
-        style={styles.statusRingAnchor}
+        style={styles.runningDotAnchor}
         testID="project-status-badge"
       >
-        <StatusRing backdrop={backdrop} />
+        <RunningDot backdrop={backdrop} />
       </View>
     );
   }
@@ -225,19 +214,15 @@ function ProjectStatusDot({ bucket }: { bucket: ProjectStatusBadgeDotBucket }) {
 
 function ProjectIcon({
   iconDataUri,
-  placeholderInitial,
   projectViewKey,
 }: {
   iconDataUri: string | null;
-  placeholderInitial: string;
   projectViewKey: string;
 }) {
   return (
     <DensityProjectIconView
       iconDataUri={iconDataUri}
-      initial={placeholderInitial}
       projectViewKey={projectViewKey}
-      textStyle={styles.projectIconFallbackText}
       uniProps={projectIconProps}
     />
   );
@@ -290,9 +275,6 @@ const styles = StyleSheet.create((theme) => {
       width: densityIconBox("md"),
       height: densityIconBox("md"),
     },
-    projectIconFallbackText: {
-      fontSize: 9,
-    },
     // The shell the alert and dot statuses share. It straddles the icon's bottom-right corner
     // (half in, half out) so the lettered project box stays readable. The shell is a knockout:
     // it is filled with the colour of the row behind it, which is what makes the ring around the
@@ -308,11 +290,13 @@ const styles = StyleSheet.create((theme) => {
       justifyContent: "center",
       overflow: "hidden",
     },
-    // Same corner as the shell, re-centred for the wider ring.
-    statusRingAnchor: {
+    // The running dot positions itself on the icon's corner; this only fills the icon box.
+    runningDotAnchor: {
       position: "absolute",
-      right: getStatusRingOffset(STATUS_BADGE_OFFSET, STATUS_BADGE_SIZE),
-      bottom: getStatusRingOffset(STATUS_BADGE_OFFSET, STATUS_BADGE_SIZE),
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
     },
     statusBadgeOnSidebar: { backgroundColor: theme.colors.surfaceSidebar },
     statusBadgeOnSidebarHover: { backgroundColor: theme.colors.surfaceSidebarHover },

@@ -941,7 +941,6 @@ function ProjectHeaderRow({
     <>
       <View style={styles.projectRowLeft}>
         <ProjectLeadingVisual
-          displayName={displayName}
           iconDataUri={iconDataUri}
           statusBucket={statusBucket}
           projectViewKey={project.viewKey}

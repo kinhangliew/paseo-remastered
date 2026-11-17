@@ -39,6 +39,8 @@ export type SendBehavior = ActiveTurnBehavior | "queue";
 export type ReleaseChannel = "stable" | "beta";
 export type ServiceUrlBehavior = "ask" | "in-app" | "external";
 export type WorkspaceTitleSource = "title" | "branch";
+/** How files are drawn in trees, tabs and headers. Directories are always pastel folders. */
+export type FileIconStyle = "outline" | "material";
 export type PullRequestOpenLocation = "main" | "side" | "explorer";
 /** What a sidebar workspace row shows in the space to the right of its title. */
 export type SidebarWorkspaceTrailing = "diff" | "timestamp" | "none";
@@ -92,6 +94,7 @@ export interface AppSettings {
   /** Max width of chat and markdown content in px; null follows the current default. */
   contentMaxWidth: number | null;
   syntaxTheme: SyntaxThemeId; // default "one"
+  fileIconStyle: FileIconStyle;
   workspaceTitleSource: WorkspaceTitleSource;
   sidebarWorkspaceTrailing: SidebarWorkspaceTrailing;
   sidebarRowItems: SidebarRowItems;
@@ -154,6 +157,7 @@ export const DEFAULT_CLIENT_SETTINGS: AppSettings = {
   codeFontSize: DEFAULT_CODE_FONT_SIZE,
   contentMaxWidth: null,
   syntaxTheme: "one",
+  fileIconStyle: "outline",
   workspaceTitleSource: "title",
   sidebarWorkspaceTrailing: "timestamp",
   sidebarRowItems: DEFAULT_SIDEBAR_ROW_ITEMS,
@@ -249,6 +253,7 @@ const StoredAppSettingsSchema = z
       .or(clampedNumber(MIN_CONTENT_MAX_WIDTH, MAX_CONTENT_MAX_WIDTH))
       .catch(null),
     syntaxTheme: z.string().refine(isSyntaxThemeId).catch("one"),
+    fileIconStyle: z.enum(["outline", "material"]).catch("outline"),
     workspaceTitleSource: z.enum(["title", "branch"]).catch("title"),
     sidebarWorkspaceTrailing: z.enum(["diff", "timestamp", "none"]).catch("timestamp"),
     sidebarRowItems: SidebarRowItemsSchema,

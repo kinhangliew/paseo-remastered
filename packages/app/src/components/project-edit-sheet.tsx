@@ -152,10 +152,8 @@ export function ProjectEditSheet({
             <View style={styles.iconRow}>
               <ProjectIconView
                 iconDataUri={state.previewDataUri}
-                initial={projectInitial(snapshot.projectName)}
                 projectViewKey={projectViewKey}
                 size={40}
-                textStyle={styles.previewText}
               />
               <Button
                 variant="outline"
@@ -196,10 +194,6 @@ export function ProjectEditSheet({
       ) : null}
     </AdaptiveModalSheet>
   );
-}
-
-function projectInitial(projectName: string): string {
-  return projectName.trim().charAt(0).toUpperCase() || "?";
 }
 
 class ProjectEditStepError extends Error {
@@ -263,10 +257,6 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     flexWrap: "wrap",
     gap: theme.spacing[2],
-  },
-  previewText: {
-    fontSize: theme.fontSize.base,
-    fontWeight: theme.fontWeight.medium,
   },
   footer: {
     flex: 1,

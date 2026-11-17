@@ -2692,6 +2692,13 @@ export const ptBR: TranslationResources = {
           "Prévia ao vivo da tipografia de conteúdo, do tema de sintaxe e da fonte de código",
         previewContent: "Prévia de conteúdo e código",
       },
+      icons: {
+        title: "Ícones",
+        fileIcons: "Ícones de arquivo",
+        fileIconsHint: "As pastas continuam em tons pastel nos dois estilos",
+        outline: "Contorno",
+        material: "Material",
+      },
     },
     shortcuts: {
       dialogTitle: "Atalhos",
