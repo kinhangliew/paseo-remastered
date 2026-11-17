@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { deriveSurfaceStates } from "./derive-colors";
 import {
   darkPureBlackTheme,
   darkTheme,
@@ -55,8 +56,8 @@ describe("Pure black theme", () => {
 
   it("steps its sidebar hover and selection off the black sidebar", () => {
     expect(darkPureBlackTheme.colors.surfaceSidebar).toBe("#000000");
-    expect(darkPureBlackTheme.colors.surfaceSidebarHover).toBe("#111111");
-    expect(darkPureBlackTheme.colors.surfaceSidebarSelected).toBe("#1d1d1d");
+    expect(darkPureBlackTheme.colors.surfaceSidebarHover).toBe("#151515");
+    expect(darkPureBlackTheme.colors.surfaceSidebarSelected).toBe("#1f1f1f");
   });
 
   it("keeps ANSI black output readable on its zero-luminance terminal background", () => {
@@ -65,8 +66,9 @@ describe("Pure black theme", () => {
   });
 });
 
-// Hover and selected are derived from the sidebar color. The values the default themes had when
-// they were picked by eye are the reference: derivation lands within a few RGB units of them.
+// Hover and selected are derived from the sidebar color. The default themes' values, from the
+// soft-UI handoff, are the reference: derived from their sidebars, the steps land within a few RGB
+// units of them, so a variant layers the way the defaults do.
 describe("Sidebar interaction surfaces", () => {
   function expectWithin(actual: string, expected: string, units: number) {
     const channels = (hex: string) =>
@@ -77,14 +79,18 @@ describe("Sidebar interaction surfaces", () => {
     });
   }
 
-  it("keeps Light hover and selection where they were", () => {
-    expectWithin(lightTheme.colors.surfaceSidebarHover, "#e4e4e7", 3);
-    expectWithin(lightTheme.colors.surfaceSidebarSelected, "#d4d4d8", 3);
+  it("derives Light hover and selection close to the authored ones", () => {
+    const { surfaceSidebar, foreground } = lightTheme.colors;
+    const derived = deriveSurfaceStates(surfaceSidebar, foreground, "light");
+    expectWithin(derived.hover, lightTheme.colors.surfaceSidebarHover, 3);
+    expectWithin(derived.selected, lightTheme.colors.surfaceSidebarSelected, 4);
   });
 
-  it("keeps Dark hover and selection where they were", () => {
-    expectWithin(darkTheme.colors.surfaceSidebarHover, "#1e2120", 2);
-    expectWithin(darkTheme.colors.surfaceSidebarSelected, "#272a29", 2);
+  it("derives Dark hover and selection close to the authored ones", () => {
+    const { surfaceSidebar, foreground } = darkTheme.colors;
+    const derived = deriveSurfaceStates(surfaceSidebar, foreground, "dark");
+    expectWithin(derived.hover, darkTheme.colors.surfaceSidebarHover, 3);
+    expectWithin(derived.selected, darkTheme.colors.surfaceSidebarSelected, 3);
   });
 });
 
@@ -95,7 +101,7 @@ describe("Built-in light theme", () => {
       primaryForeground: "#fafafa",
       destructiveForeground: "#ffffff",
       terminal: {
-        black: "#1a1a1e",
+        black: "#1c1c1e",
         brightBlack: "#3f3f46",
       },
     });

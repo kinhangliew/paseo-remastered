@@ -27,6 +27,8 @@ import {
   useWindowDimensions,
   View,
   type LayoutChangeEvent,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native";
 import {
   Gesture,
@@ -84,7 +86,7 @@ import {
   type SidebarWorkspaceEntry,
 } from "@/hooks/use-sidebar-workspaces-list";
 import { density } from "@/styles/density";
-import { SPACING } from "@/styles/theme";
+import { FLOATING_PANEL_INSET, SPACING } from "@/styles/theme";
 import { useSidebarModel } from "@/components/sidebar/sidebar-model";
 import type { PinnedSidebarGroups } from "@/hooks/use-sidebar-pins";
 import { RetainedPanelActivity } from "@/components/retained-panel";
@@ -832,17 +834,29 @@ function DesktopSidebar({
     () => [staticStyles.desktopSidebar, resizeAnimatedStyle],
     [resizeAnimatedStyle],
   );
-  const desktopSidebarBorderStyle = useMemo(
+  const desktopSidebarPanelStyle = useMemo(
     () => [
-      styles.desktopSidebarBorder(divisionLayout !== null),
+      styles.desktopSidebarPanel,
       {
-        flex: 1,
         paddingTop: insetsTop,
         paddingBottom: insets.bottom,
         paddingLeft: resolveDesktopSidebarInsetLeft({ overlay, safeAreaLeft: insets.left }),
       },
     ],
-    [insetsTop, insets.bottom, insets.left, overlay, divisionLayout],
+    [insetsTop, insets.bottom, insets.left, overlay],
+  );
+  const showsResizeHandle = !overlay && divisionLayout === null;
+  const resizeHandle = useMemo(
+    () =>
+      showsResizeHandle ? (
+        <SidebarResizeHandle
+          edge="right"
+          gesture={resizeGesture}
+          pressed={resizePressed}
+          testID="left-sidebar-resize-handle"
+        />
+      ) : null,
+    [showsResizeHandle, resizeGesture, resizePressed],
   );
   const inTopBand = useTopBand() !== null;
   // Windows and Linux draw their window controls top-right, so the sidebar has no chrome
@@ -860,7 +874,7 @@ function DesktopSidebar({
       closeGesture={closeGesture}
     >
       <Animated.View style={desktopSidebarStyle}>
-        <View style={desktopSidebarBorderStyle}>
+        <FloatingSidebarPanel panelStyle={desktopSidebarPanelStyle} resizeHandle={resizeHandle}>
           <View style={styles.sidebarDragArea}>
             {showsChromeRow ? (
               <View style={styles.desktopChromeRow}>
@@ -935,18 +949,26 @@ function DesktopSidebar({
             handleOpenHostSettings={handleOpenHostSettings}
             onBeforeNavigate={closeSidebar}
           />
-
-          {!overlay && divisionLayout === null ? (
-            <SidebarResizeHandle
-              edge="right"
-              gesture={resizeGesture}
-              pressed={resizePressed}
-              testID="left-sidebar-resize-handle"
-            />
-          ) : null}
-        </View>
+        </FloatingSidebarPanel>
       </Animated.View>
     </MobilePanelOverlay>
+  );
+}
+
+// The sidebar floats: the gutter paints the page around it, so the panel keeps the width the user
+// set and no divider is needed between it and the workspace. The resize handle sits in the gap.
+interface FloatingSidebarPanelProps {
+  panelStyle: StyleProp<ViewStyle>;
+  resizeHandle: ReactNode;
+  children: ReactNode;
+}
+
+function FloatingSidebarPanel({ panelStyle, resizeHandle, children }: FloatingSidebarPanelProps) {
+  return (
+    <View style={styles.desktopSidebarGutter}>
+      <View style={panelStyle}>{children}</View>
+      {resizeHandle}
+    </View>
   );
 }
 
@@ -1010,11 +1032,17 @@ const styles = StyleSheet.create((theme) => ({
   mobileCloseButton: (rightInset: number) => ({
     marginRight: theme.spacing[2] + rightInset,
   }),
-  desktopSidebarBorder: (hasDivision: boolean) => ({
-    borderRightWidth: hasDivision ? 0 : 1,
-    borderRightColor: theme.colors.border,
+  desktopSidebarGutter: {
+    flex: 1,
+    padding: FLOATING_PANEL_INSET,
+    backgroundColor: theme.colors.surfaceWorkspace,
+  },
+  desktopSidebarPanel: {
+    flex: 1,
+    overflow: "hidden",
+    borderRadius: theme.borderRadius.panel,
     backgroundColor: theme.colors.surfaceSidebar,
-  }),
+  },
   sidebarDragArea: {
     position: "relative",
   },

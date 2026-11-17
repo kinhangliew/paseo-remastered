@@ -187,9 +187,10 @@ it("keeps a press's fill and report together when the fill goes away mid-press",
   fireEvent.mouseDown(row, { button: 0 });
   await waitFor(() => expect(midPress.calls).toEqual(["in"]));
   rerender(<PressedRow filled={false} />);
-  expect(getComputedStyle(row).backgroundColor).toBe("rgb(20, 30, 40)");
+  // The fill eases in over 180ms on web, so wait for it to land.
+  await waitFor(() => expect(getComputedStyle(row).backgroundColor).toBe("rgb(20, 30, 40)"));
   fireEvent.mouseUp(row, { button: 0 });
   await waitFor(() => expect(midPress.calls).toEqual(["in", "out"]));
-  expect(getComputedStyle(row).backgroundColor).toBe("rgb(255, 255, 255)");
+  await waitFor(() => expect(getComputedStyle(row).backgroundColor).toBe("rgb(255, 255, 255)"));
   expect(midPress.highlights.calls).toEqual([true, false]);
 });

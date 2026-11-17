@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import { darkHighlightColors, lightHighlightColors } from "@getpaseo/highlight";
-import { deriveSurfaceStates } from "./derive-colors";
+import { derivePanelContent, deriveSurfaceStates, type PanelContentColors } from "./derive-colors";
 
 export const baseColors = {
   // Base colors
@@ -115,13 +115,13 @@ export const baseColors = {
 // A diff *stat* — the "+12 −3" footnote next to a title — is not this. It is a status
 // signal, so it uses statusSuccess/statusDanger below rather than a tier of its own.
 const lightDiffColors = {
-  diffAddition: "#15803d", // green-700 — readable on white without screaming
-  diffDeletion: "#b91c1c", // red-700
+  diffAddition: "#1f8a4c",
+  diffDeletion: "#c23b3b",
 };
 
 const darkDiffColors = {
-  diffAddition: "#4ade80", // green-400
-  diffDeletion: "#ef4444", // red-500
+  diffAddition: "#4cc27a",
+  diffDeletion: "#f07272",
 };
 
 // Status colors — semantic signals for success/danger/warning/merged. There is exactly one
@@ -243,6 +243,8 @@ export interface LightThemeConfig {
   terminalBlack: string;
   terminalBrightBlack: string;
   ring?: string;
+  /** Overrides for the derived pill, composer, secondary text and icon colors. */
+  panelContent?: Partial<PanelContentColors>;
 }
 
 const lightTerminalAnsi = {
@@ -264,6 +266,16 @@ const lightTerminalAnsi = {
 
 export function buildLightSemanticColors(tint: LightThemeConfig) {
   const sidebarStates = deriveSurfaceStates(tint.surfaceSidebar, tint.foreground, "light");
+  const panelContent = {
+    ...derivePanelContent({
+      page: tint.surface0,
+      panel: tint.surfaceSidebar,
+      foreground: tint.foreground,
+      mutedForeground: tint.foregroundMuted,
+      scheme: "light",
+    }),
+    ...tint.panelContent,
+  };
   return {
     surface0: tint.surface0,
     surface1: tint.surface1,
@@ -277,6 +289,7 @@ export function buildLightSemanticColors(tint: LightThemeConfig) {
     foregroundSidebarSelected: tint.foregroundSidebarSelected ?? tint.foregroundExtraMuted,
     surfaceWorkspace: tint.surface0,
     interactionHighlight: "rgba(0, 0, 0, 0.06)",
+    ...panelContent,
 
     foreground: tint.foreground,
     foregroundMuted: tint.foregroundMuted,
@@ -320,15 +333,20 @@ export function buildLightSemanticColors(tint: LightThemeConfig) {
   };
 }
 
+// Soft UI (`design-handoff/soft-ui.md`): a cool-gray floating panel on a white page.
 const lightSemanticColors = buildLightSemanticColors({
   surface0: "#ffffff",
   surface1: "#fafafa",
   surface2: "#f4f4f5",
   surface3: "#e4e4e7",
   surface4: "#d4d4d8",
-  surfaceSidebar: "#f4f4f5",
-  foreground: "#1a1a1e",
-  foregroundMuted: "#71717a",
+  surfaceSidebar: "#f3f4f5",
+  surfaceSidebarHover: "#e8e9ec",
+  // The handoff's #e3e5e9 is 1.15:1 from the panel, under the 1.2 floor that keeps a selected row
+  // apart from a hovered one; this is the nearest value of the same hue that clears it.
+  surfaceSidebarSelected: "#dddfe3",
+  foreground: "#1c1c1e",
+  foregroundMuted: "#6b6b70",
   foregroundExtraMuted: "#a1a1aa",
   border: "#e4e4e7",
   borderAccent: "#ececf1",
@@ -338,8 +356,13 @@ const lightSemanticColors = buildLightSemanticColors({
   primary: "#18181b",
   primaryForeground: "#fafafa",
   destructive: "#b04138",
-  terminalBlack: "#1a1a1e",
+  terminalBlack: "#1c1c1e",
   terminalBrightBlack: "#3f3f46",
+  panelContent: {
+    foregroundSecondary: "#4a4a4f",
+    iconOutline: "#b9bac0",
+    iconGlyph: "#7d7e85",
+  },
 });
 
 // ---------------------------------------------------------------------------
@@ -369,6 +392,10 @@ export interface DarkThemeConfig {
   terminalBrightBlack: string;
   foreground?: string;
   ring?: string;
+  /** The main content area. Defaults to `surface1`. */
+  surfaceWorkspace?: string;
+  /** Overrides for the derived pill, composer, secondary text and icon colors. */
+  panelContent?: Partial<PanelContentColors>;
 }
 
 const darkTerminalAnsi = {
@@ -392,6 +419,17 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
   const foreground = tint.foreground ?? "#fafafa";
   const ring = tint.ring ?? tint.accent;
   const sidebarStates = deriveSurfaceStates(tint.surfaceSidebar, foreground, "dark");
+  const surfaceWorkspace = tint.surfaceWorkspace ?? tint.surface1;
+  const panelContent = {
+    ...derivePanelContent({
+      page: surfaceWorkspace,
+      panel: tint.surfaceSidebar,
+      foreground,
+      mutedForeground: tint.foregroundMuted,
+      scheme: "dark",
+    }),
+    ...tint.panelContent,
+  };
   return {
     surface0: tint.surface0,
     surface1: tint.surface1,
@@ -403,8 +441,9 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
     surfaceSidebarSelected: tint.surfaceSidebarSelected ?? sidebarStates.selected,
     foregroundSidebarHover: tint.foregroundSidebarHover ?? tint.foregroundExtraMuted,
     foregroundSidebarSelected: tint.foregroundSidebarSelected ?? tint.foregroundExtraMuted,
-    surfaceWorkspace: tint.surface1,
+    surfaceWorkspace,
     interactionHighlight: "rgba(255, 255, 255, 0.08)",
+    ...panelContent,
 
     foreground,
     foregroundMuted: tint.foregroundMuted,
@@ -453,23 +492,36 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
 // Dark tint definitions
 // ---------------------------------------------------------------------------
 
-// Paseo — subtle teal-green tint (default)
+// Paseo — soft neutral gray (default). Floating panels sit one step lighter than the page; dark
+// separates layers by lightness rather than by shadow (`design-handoff/soft-ui.md`).
 const paseoDarkColors = buildDarkSemanticColors({
-  surface0: "#181B1A",
-  surface1: "#1E2120",
-  surface2: "#272A29",
-  surface3: "#434645",
-  surface4: "#595B5B",
-  surfaceSidebar: "#141716",
-  foregroundMuted: "#A1A5A4",
-  foregroundExtraMuted: "#717574",
-  border: "#252B2A",
-  borderAccent: "#2F3534",
+  surface0: "#161618",
+  surface1: "#1c1c1f",
+  surface2: "#262629",
+  surface3: "#404044",
+  surface4: "#56565b",
+  surfaceWorkspace: "#161618",
+  surfaceSidebar: "#202124",
+  surfaceSidebarHover: "#2b2c30",
+  surfaceSidebarSelected: "#323338",
+  foreground: "#ececee",
+  foregroundMuted: "#9a9aa1",
+  foregroundExtraMuted: "#6e6e75",
+  border: "#2c2d31",
+  borderAccent: "#36373c",
   accent: "#20744A",
   accentBright: "#7ccba0",
-  destructive: "#c64f43", // warm red, hue ~7 — reads as red (not pink) against the green tint
-  terminalBlack: "#141716",
-  terminalBrightBlack: "#434645",
+  destructive: "#c64f43",
+  terminalBlack: "#161618",
+  terminalBrightBlack: "#404044",
+  panelContent: {
+    surfacePill: "#36373c",
+    surfaceComposer: "#1e1f22",
+    foregroundSecondary: "#c4c4c9",
+    iconFill: "#2a2b2f",
+    iconOutline: "#5a5b62",
+    iconGlyph: "#a3a4ab",
+  },
 });
 
 // Zinc — neutral gray, no tint
@@ -568,6 +620,10 @@ export const SPACING = {
   32: 128,
 } as const;
 
+// The gap between a floating panel (sidebar, Explorer) and the window edge or the next surface. Off
+// the spacing scale on purpose: the soft-UI handoff sets it by eye at 10.
+export const FLOATING_PANEL_INSET = 10;
+
 export const FONT_SIZE = {
   code: 12,
   content: 15,
@@ -608,6 +664,9 @@ export const BORDER_RADIUS = {
   lg: 8,
   xl: 12,
   "2xl": 16,
+  // Soft UI: floating panels (sidebar, Explorer) and the rows inside them.
+  panel: 20,
+  row: 12,
   full: 9999,
 } as const;
 

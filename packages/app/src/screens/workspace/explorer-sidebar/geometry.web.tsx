@@ -42,6 +42,7 @@ export function useExplorerGeometry({
           testID="workspace-explorer-sidebar-resize-handle"
           direction="horizontal"
           hitAreaAlignment="end"
+          restingLine="none"
           groupId="explorer-sidebar"
           index={0}
           sizes={sizes}

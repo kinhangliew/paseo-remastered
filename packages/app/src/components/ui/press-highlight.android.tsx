@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import type { Theme } from "@/styles/theme";
+import { pressedScaleStyle } from "./press-highlight.fill";
 import type { PressHighlightProps } from "./press-highlight.types";
 
 interface RipplePressableProps extends Omit<PressableProps, "style"> {
@@ -53,6 +54,7 @@ export const PressHighlight = forwardRef<View, PressHighlightProps>(function Pre
   const hasRipple = highlightStyle != null;
   const rippleStyle = useCallback(
     (state: PressableStateCallbackType) => [
+      hasRipple && state.pressed && pressedScaleStyle,
       hasRipple && styles.rippleBorderReset,
       typeof style === "function" ? style(state) : style,
       hasRipple && styles.rippleClip,

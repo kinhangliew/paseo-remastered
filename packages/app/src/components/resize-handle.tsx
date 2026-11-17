@@ -13,6 +13,8 @@ export interface ResizeHandleProps {
   testID?: string;
   direction: "horizontal" | "vertical";
   hitAreaAlignment?: "center" | "end";
+  /** A handle in the gap between floating panels draws no line at rest; the gap separates them. */
+  restingLine?: "border" | "none";
   groupId: string;
   index: number;
   sizes: number[];
@@ -39,6 +41,7 @@ export function ResizeHandle({
   testID,
   direction,
   hitAreaAlignment = "center",
+  restingLine = "border",
   groupId,
   index,
   sizes,
@@ -205,9 +208,9 @@ export function ResizeHandle({
     () => [
       styles.handle,
       direction === "horizontal" ? styles.handleHorizontal : styles.handleVertical,
-      { backgroundColor: theme.colors.border },
+      { backgroundColor: restingLine === "border" ? theme.colors.border : "transparent" },
     ],
-    [direction, theme.colors.border],
+    [direction, restingLine, theme.colors.border],
   );
   const highlightStyle = useMemo(
     () => [

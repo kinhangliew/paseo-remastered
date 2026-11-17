@@ -145,7 +145,7 @@ const styles = StyleSheet.create((theme) => ({
     // Same row geometry as the settings sidebar items. Shorter than the header
     // strip so the hover highlight clears the strip's bottom separator.
     minHeight: density.tightRowHeight,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.row,
   },
   rowHighlighted: {
     backgroundColor: theme.colors.surfaceSidebarHover,

@@ -11,11 +11,13 @@ import { RetainedPanelActivity } from "@/components/retained-panel";
 import { resolveExplorerSidebarWidth } from "@/components/explorer-sidebar-layout";
 import { useWorkspaceLayoutStore } from "@/stores/workspace-layout-store";
 import { useExplorerGeometry } from "./geometry";
+import { FLOATING_PANEL_INSET } from "@/styles/theme";
 import type { ExplorerFrameProps } from "./frame-props";
 
 function ExplorerFrameBase({
   children,
   surfaceColor,
+  gutterColor,
   presentation,
   isOpen,
   isWorkspaceActive,
@@ -51,11 +53,14 @@ function ExplorerFrameBase({
           presentation={presentation}
           dockVisible={isOpen}
           frameStyle={geometry.frameStyle}
-          panelStyle={[{ backgroundColor: surfaceColor }, geometry.panelStyle]}
+          panelStyle={[
+            { backgroundColor: overlay ? surfaceColor : gutterColor },
+            geometry.panelStyle,
+          ]}
         >
-          <View style={styles.content}>
+          <View style={overlay ? styles.content : styles.floatingGutter}>
             {resizeEnabled ? geometry.resizeHandle : null}
-            {children}
+            {overlay ? children : <View style={styles.floatingPanel}>{children}</View>}
           </View>
         </MobilePanelOverlay>
       </FileExplorerCloseGestureContext>
@@ -64,5 +69,18 @@ function ExplorerFrameBase({
 }
 export const ExplorerFrame = withUnistyles(ExplorerFrameBase, (theme) => ({
   surfaceColor: theme.colors.surfaceSidebar,
+  gutterColor: theme.colors.surfaceWorkspace,
 }));
-const styles = StyleSheet.create({ content: { flex: 1, minHeight: 0 } });
+// Docked, the Explorer floats like the sidebar: the frame keeps its width and paints the page
+// around a rounded panel. The resize handle sits in the gap, outside the panel's clip.
+const styles = StyleSheet.create((theme) => ({
+  content: { flex: 1, minHeight: 0 },
+  floatingGutter: { flex: 1, minHeight: 0, padding: FLOATING_PANEL_INSET },
+  floatingPanel: {
+    flex: 1,
+    minHeight: 0,
+    overflow: "hidden",
+    borderRadius: theme.borderRadius.panel,
+    backgroundColor: theme.colors.surfaceSidebar,
+  },
+}));
